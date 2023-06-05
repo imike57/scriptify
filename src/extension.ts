@@ -5,6 +5,10 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 
+
+// const terminal = vscode.window.createTerminal('Scriptify');
+const outputChanel = vscode.window.createOutputChannel("Scriptify");
+
 function createScriptFile() {
 	vscode.window.showInputBox({
 		prompt: "Enter script name"
@@ -55,16 +59,15 @@ function applyScript() {
 			placeHolder: 'Select a script to apply'
 		}).then(selectedScript => {
 			if (selectedScript) {
+				try {
+					
 				const scriptPath = path.join(scriptFolder, selectedScript);
 				console.log("scriptPath", scriptPath);
 
-				var sc = fs.readFileSync(scriptPath, "utf-8");
-				console.log("sc", sc);
-				const transform = eval(sc);
-				console.log("transform", transform);
+				var scriptString = fs.readFileSync(scriptPath, "utf-8");
+				const transform = eval(scriptString);
 				const editor = vscode.window.activeTextEditor;
 
-				console.log(editor);
 
 				if (editor) {
 					const document = editor.document;
@@ -85,6 +88,12 @@ function applyScript() {
 							vscode.window.showErrorMessage('Failed to apply script.');
 						}
 					});
+				}
+			
+				} catch (error:any) {
+					console.log(error);
+					outputChanel.show(true);
+					outputChanel.append(error);
 				}
 			}
 		});
