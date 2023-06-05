@@ -20,6 +20,19 @@ Scriptify is a Visual Studio Code extension that allows you to create and apply 
 
 4. To apply a script to the current selection, open the command palette (Ctrl/Cmd + Shift + P) and search for "Scriptify: Apply Script". Select a script from the displayed list, and the transformation defined in the script will be applied to the selected value.
 
+## Example
+
+### Transform to lowerCase a selection
+```js
+
+function transform(value) {
+  return value.toLowerCase();
+}
+
+module.exports = transform;
+
+```
+
 ## Contributing
 
 Contributions to Scriptify are welcome! If you encounter any issues or have suggestions for improvements, please open an issue in the [GitHub repository](https://github.com/imike57/scriptify/issues).

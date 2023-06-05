@@ -1,8 +1,7 @@
 # Change Log
 
-All notable changes to the "scriptify" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## 0.0.3
+Apply a script to multiple cursor.
 
 ## [Unreleased]
 
