@@ -21,10 +21,24 @@
         "title": "Scriptify: Create New Script"
       },
       {
+        "command": "scriptify.createGlobalScript",
+        "title": "Scriptify: Create New Global Script"
+      },
+      {
         "command": "scriptify.applyScript",
         "title": "Scriptify: Apply Script"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Scriptify",
+      "properties": {
+        "scriptify.globalFolderLocation": {
+          "type": "string",
+          "default": null,
+          "description": "Overrides the default global folder location. Defaults to your computer's temp directory. On Windows this is: C:\\Users\\<your user name>\\AppData\\Local\\Temp"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
