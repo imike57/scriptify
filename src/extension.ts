@@ -191,22 +191,26 @@ function applyScript() {
           if (editor) {
             const document = editor.document;
             const selections = editor.selections;
-            const transformedTexts = selections.map(selection => {
+            const transformedTexts = selections.map(async selection => {
               const selectedText = document.getText(selection);
-              return transform(selectedText);
+              return await transform(selectedText);
             });
 
-            editor.edit(editBuilder => {
-              selections.forEach((selection, index) => {
-                editBuilder.replace(selection, transformedTexts[index]);
+            Promise.all(transformedTexts).then(tTexts => {
+              editor.edit(editBuilder => {
+                selections.forEach( (selection, index) => {
+                  editBuilder.replace(selection, tTexts[index]);
+                });
+              }).then(success => {
+                if (success) {
+                  vscode.window.showInformationMessage('Script applied successfully.');
+                } else {
+                  vscode.window.showErrorMessage('Failed to apply script.');
+                }
               });
-            }).then(success => {
-              if (success) {
-                vscode.window.showInformationMessage('Script applied successfully.');
-              } else {
-                vscode.window.showErrorMessage('Failed to apply script.');
-              }
             });
+
+            
           }
         };
 
