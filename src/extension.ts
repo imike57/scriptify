@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import * as lvp from "live-plugin-manager";
 
 interface ScriptFile {
 	name: string,
@@ -119,28 +120,67 @@ function applyScript() {
 				console.log("scriptPath", scriptPath);
 
 				var scriptString = fs.readFileSync(scriptPath, "utf-8");
-				const transform = eval(scriptString);
-				const editor = vscode.window.activeTextEditor;
 
-				if (editor) {
-					const document = editor.document;
-					const selections = editor.selections;
-					const transformedTexts = selections.map(selection => {
-						const selectedText = document.getText(selection);
-						return transform(selectedText);
-					});
+				//find all the times _require() is called by the script
+				const scriptRequires = scriptString.match(/_require\(["'`].+["'`]\)/g)?.map(i => i.substring("_require('".length, i.length - "')".length));
+				const manager = new lvp.PluginManager();
+				//create the _require alias
+				const _require = manager.require.bind(manager);
 
-					editor.edit(editBuilder => {
-						selections.forEach((selection, index) => {
-							editBuilder.replace(selection, transformedTexts[index]);
+				const execute = () => {
+					//calls the script
+					const transform = eval(scriptString);
+					const editor = vscode.window.activeTextEditor;
+
+					if (editor) {
+						const document = editor.document;
+						const selections = editor.selections;
+						const transformedTexts = selections.map(selection => {
+							const selectedText = document.getText(selection);
+							return transform(selectedText);
 						});
-					}).then(success => {
-						if (success) {
-							vscode.window.showInformationMessage('Script applied successfully.');
-						} else {
-							vscode.window.showErrorMessage('Failed to apply script.');
+
+						editor.edit(editBuilder => {
+							selections.forEach((selection, index) => {
+								editBuilder.replace(selection, transformedTexts[index]);
+							});
+						}).then(success => {
+							if (success) {
+								vscode.window.showInformationMessage('Script applied successfully.');
+							} else {
+								vscode.window.showErrorMessage('Failed to apply script.');
+							}
+						});
+					}
+				};
+				
+				if (scriptRequires) {	
+					//need to install npm packages
+					console.log(`Installing ${scriptRequires.length} packages: ${scriptRequires}`);
+					vscode.window.withProgress({
+						location: vscode.ProgressLocation.Notification,
+						title: `Installing ${scriptRequires.length} NPM packages...`,
+						cancellable: true
+					}, async (progress, token) => {			
+						progress.report({ increment: 0 });
+
+						for (const pkg of scriptRequires) {
+							if (token.isCancellationRequested) {
+								return;
+							}
+
+							progress.report({ 
+								increment: scriptRequires.indexOf(pkg) / scriptRequires.length * 100, 
+								message: `Installing ${pkg}...`,
+							});
+							await manager.install(pkg);
 						}
+						execute();
 					});
+				}
+				else {
+					//no npm packages to install, execute now
+					execute();
 				}
 			} catch (error:any) {
 				console.log(error);
