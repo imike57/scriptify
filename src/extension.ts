@@ -56,7 +56,7 @@ function createScriptFile(createGlobally = false) {
 				fs.mkdirSync(scriptFolder);
 			}
 
-			const scriptPath = path.join(scriptFolder, `${scriptName}.js`);
+			const scriptPath = path.join(scriptFolder, `${sanitizeFileName(scriptName)}.js`);
 			const scriptContent = `
 function transform(value) {
   // TODO: Implement your transformation logic here
@@ -79,17 +79,34 @@ function createGlobalScriptFile() {
 	createScriptFile(true);
 }
 
+function sanitizeFileName(fileName: string, replacementChar: string = '-'): string {
+	const invalidCharsRegex = /[\W]/g;
+	return fileName.replace(invalidCharsRegex, replacementChar);
+  }
+  
+
 function getScriptFiles(parentPath: string) : Array<ScriptFile> {
 	const scriptFolder = path.join(parentPath || '', '.scriptify');
 	if (!fs.existsSync(scriptFolder)) {
 		return [];
 	}
 
-	return fs.readdirSync(scriptFolder).map(f => ({
+	return fs.readdirSync(scriptFolder)
+	.filter(f => f.endsWith('.js'))
+	.map(f => ({
 		name: f.replace(/\.js$/g, ""),
 		uri: path.join(scriptFolder, f),
 	}));
 }
+
+function checkDirectoryExists(directoryPath: string): boolean {
+	try {
+	  const stat = fs.statSync(directoryPath);
+	  return stat.isDirectory();
+	} catch (error) {
+	  return false;
+	}
+  }
 
 function applyScript() {
 	let files: Array<ScriptFile> = [];
@@ -123,7 +140,9 @@ function applyScript() {
 
 				//find all the times _require() is called by the script
 				const scriptRequires = scriptString.match(/_require\(["'`].+["'`]\)/g)?.map(i => i.substring("_require('".length, i.length - "')".length));
-				const manager = new lvp.PluginManager();
+
+				const managerPath = path.join(getGlobalFolder(), '.scriptify', 'packages');
+				const manager = new lvp.PluginManager({pluginsPath: managerPath});
 				//create the _require alias
 				const _require = manager.require.bind(manager);
 
@@ -169,11 +188,22 @@ function applyScript() {
 								return;
 							}
 
+							const packageDirectoryExist = checkDirectoryExists(path.join(managerPath, pkg));
+
 							progress.report({ 
 								increment: scriptRequires.indexOf(pkg) / scriptRequires.length * 100, 
-								message: `Installing ${pkg}...`,
+								message: `Installing ${pkg}...${packageDirectoryExist ? '(cached)': '(npm)'}`
 							});
-							await manager.install(pkg);
+
+							// Install from cache if exist.
+							if (checkDirectoryExists(path.join(managerPath, pkg))) {
+								await manager.installFromPath(path.join(managerPath, pkg));
+
+							} else {
+								await manager.install(pkg);
+
+							}
+
 						}
 						execute();
 					});
