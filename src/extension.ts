@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as lvp from "live-plugin-manager";
 
+/** Represent a script file. */
 interface ScriptFile {
   name: string;
   uri: string;
