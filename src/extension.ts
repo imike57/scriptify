@@ -13,21 +13,21 @@ interface ScriptFile {
 }
 
 export interface GithubFile {
-  name:         string;
-  path:         string;
-  sha:          string;
-  size:         number;
-  url:          string;
-  html_url:     string;
-  git_url:      string;
+  name: string;
+  path: string;
+  sha: string;
+  size: number;
+  url: string;
+  html_url: string;
+  git_url: string;
   download_url: string;
-  type:         string;
-  _links:       GithubLinks;
+  type: string;
+  _links: GithubLinks;
 }
 
 export interface GithubLinks {
   self: string;
-  git:  string;
+  git: string;
   html: string;
 }
 
@@ -63,36 +63,33 @@ function downloadScript() {
     url: githubExampleFolderAPI,
     responseType: "json"
   }).then(results => {
-      console.log(results);
-        const list = results.data.map(entry => {
-          return entry.name;
-        })
-        vscode.window.showQuickPick(list).then(fileName => {
-          console.log(fileName);
+    const list = results.data.map(entry => {
+      return entry.name;
+    })
+    vscode.window.showQuickPick(list).then(fileName => {
 
-          if (fileName) {
-            const selectedFile = results.data.find(file => file.name === fileName);
-            const scriptName = path.parse(fileName).name;
+      if (fileName) {
+        const selectedFile = results.data.find(file => file.name === fileName);
+        const scriptName = path.parse(fileName).name;
 
-            if (selectedFile) {
-              axios({
-                method: "get",
-                url: selectedFile.download_url,
-                responseType: "text"
-              }).then(fileContent => {
-                console.log(fileContent.data);
-                vscode.window.showInformationMessage(fileContent.data);
+        if (selectedFile) {
+          axios({
+            method: "get",
+            url: selectedFile.download_url,
+            responseType: "text"
+          }).then(fileContent => {
+            vscode.window.showInformationMessage(fileContent.data);
 
-                vscode.window.showQuickPick(["Install globally", "Install locally"]).then(choice => {
-                  writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
+            vscode.window.showQuickPick(["Install globally", "Install locally"]).then(choice => {
+              writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
 
-                });
+            });
 
-              });
+          });
 
-            }
-          }
-        });
+        }
+      }
+    });
 
 
   });
@@ -149,7 +146,7 @@ module.exports = transform;
 
 
 /** Return the global or local script folder  */
-const getScriptFolder = (global:boolean) => {
+const getScriptFolder = (global: boolean) => {
 
   return new Promise<string>((resolve, reject) => {
     if (!global) {
@@ -305,7 +302,6 @@ function applyScript() {
           return;
         }
         const scriptPath = file.uri;
-        console.log("scriptPath", scriptPath);
 
         var scriptString = fs.readFileSync(scriptPath, "utf-8");
 
@@ -332,7 +328,7 @@ function applyScript() {
 
             Promise.all(transformedTexts).then(tTexts => {
               editor.edit(editBuilder => {
-                selections.forEach( (selection, index) => {
+                selections.forEach((selection, index) => {
                   editBuilder.replace(selection, tTexts[index]);
                 });
               }).then(success => {
@@ -344,7 +340,7 @@ function applyScript() {
               });
             });
 
-            
+
           }
         };
 
@@ -408,4 +404,4 @@ export function activate(context: vscode.ExtensionContext) {
 /**
  * This method is called when your extension is deactivated.
  */
-export function deactivate() {}
+export function deactivate() { }
