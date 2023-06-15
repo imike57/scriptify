@@ -1,6 +1,6 @@
 # Change Log
 
-## next
+## 0.3.0
 - Asynchronous script handling.
 - Added "dummyjson.json" example.
 - Added ability to download an example script to local or global space from Github repo.
