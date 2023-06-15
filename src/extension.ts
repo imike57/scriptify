@@ -5,11 +5,37 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as lvp from "live-plugin-manager";
-
+import axios from "axios";
 /** Represent a script file. */
 interface ScriptFile {
   name: string;
   uri: string;
+}
+
+export interface GithubFile {
+  name:         string;
+  path:         string;
+  sha:          string;
+  size:         number;
+  url:          string;
+  html_url:     string;
+  git_url:      string;
+  download_url: string;
+  type:         string;
+  _links:       GithubLinks;
+}
+
+export interface GithubLinks {
+  self: string;
+  git:  string;
+  html: string;
+}
+
+/** Return the current version of the extension. */
+function getVersion() {
+  const packageJsonPath = path.join(__dirname, '../package.json');
+  const pJSON = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+  return pJSON.version;
 }
 
 /**
@@ -24,6 +50,52 @@ const outputChannel = vscode.window.createOutputChannel('Scriptify');
  */
 function getGlobalFolder(): string {
   return vscode.workspace.getConfiguration('scriptify').get<string>('globalFolderLocation') || os.tmpdir();
+}
+/**
+ * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
+ */
+function downloadScript() {
+
+  const githubExampleFolderAPI = `https://api.github.com/repos/imike57/scriptify/contents/examples?ref=${getVersion()}`;
+
+  axios<GithubFile[]>({
+    method: "get",
+    url: githubExampleFolderAPI,
+    responseType: "json"
+  }).then(results => {
+      console.log(results);
+        const list = results.data.map(entry => {
+          return entry.name;
+        })
+        vscode.window.showQuickPick(list).then(fileName => {
+          console.log(fileName);
+
+          if (fileName) {
+            const selectedFile = results.data.find(file => file.name === fileName);
+            const scriptName = path.parse(fileName).name;
+
+            if (selectedFile) {
+              axios({
+                method: "get",
+                url: selectedFile.download_url,
+                responseType: "text"
+              }).then(fileContent => {
+                console.log(fileContent.data);
+                vscode.window.showInformationMessage(fileContent.data);
+
+                vscode.window.showQuickPick(["Install globally", "Install locally"]).then(choice => {
+                  writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
+
+                });
+
+              });
+
+            }
+          }
+        });
+
+
+  });
 }
 
 /**
@@ -54,26 +126,12 @@ function getWorkspaceFolder(ignoreErrors = false): string | null {
  * @param createGlobally Specifies whether to create the script globally.
  */
 function createScriptFile(createGlobally = false) {
-  let workspaceFolder: string;
-  if (!createGlobally) {
-    try {
-      workspaceFolder = getWorkspaceFolder() || "";
-    } catch (err) {
-      return vscode.window.showErrorMessage(`${err}`);
-    }
-  }
 
   vscode.window.showInputBox({
     prompt: "Enter script name"
   }).then(scriptName => {
     if (scriptName) {
-      const parentPath = createGlobally ? getGlobalFolder() : workspaceFolder;
-      const scriptFolder = path.join(parentPath, '.scriptify');
-      if (!fs.existsSync(scriptFolder)) {
-        fs.mkdirSync(scriptFolder);
-      }
 
-      const scriptPath = path.join(scriptFolder, `${sanitizeFileName(scriptName)}.js`);
       const scriptContent = `
 function transform(value) {
   // TODO: Implement your transformation logic here
@@ -83,14 +141,74 @@ function transform(value) {
 module.exports = transform;
 `;
 
-      fs.writeFileSync(scriptPath, scriptContent);
+      writeScriptFile(scriptName, scriptContent, createGlobally);
 
-      vscode.workspace.openTextDocument(scriptPath).then(doc => vscode.window.showTextDocument(doc));
-
-      vscode.window.showInformationMessage(`Script "${scriptName}" created successfully.`);
     }
   });
 }
+
+
+/** Return the global or local script folder  */
+const getScriptFolder = (global:boolean) => {
+
+  return new Promise<string>((resolve, reject) => {
+    if (!global) {
+      try {
+        resolve(path.join(getWorkspaceFolder() || "", ".scriptify"));
+      } catch (err) {
+        return reject(err);
+      }
+    } else {
+      return resolve(path.join(getGlobalFolder(), ".scriptify"));
+    }
+  });
+};
+
+
+/**
+ * Writes a script file with the specified name and content.
+ * @param scriptName - The name of the script.
+ * @param scriptContent - The content of the script.
+ * @param global - Indicates if the script is global or local.
+ * @param overwrite - Optional parameter indicating whether to overwrite an existing file.
+ * @returns A promise that resolves to the script path.
+ */
+function writeScriptFile(scriptName: string, scriptContent: string, global: boolean, overwrite: boolean = false) {
+  return new Promise<{ scriptPath: string }>(async (resolve, reject) => {
+    const scriptFolder = await getScriptFolder(global);
+
+    if (!fs.existsSync(scriptFolder)) {
+      fs.mkdirSync(scriptFolder);
+    }
+
+    const scriptPath = path.join(scriptFolder, `${sanitizeFileName(scriptName)}.js`);
+
+    if (overwrite || !checkFileExists(scriptPath)) {
+      fs.writeFile(scriptPath, scriptContent, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({
+            scriptPath: scriptPath
+          });
+
+          vscode.workspace.openTextDocument(scriptPath).then(doc => vscode.window.showTextDocument(doc));
+
+          vscode.window.showInformationMessage(`Script "${scriptName}" created successfully.`);
+        }
+      });
+    } else {
+      vscode.window.showWarningMessage("File already exists. Do you want to overwrite it?", "Yes", "No").then(val => {
+        if (val === "Yes") {
+          return writeScriptFile(scriptName, scriptContent, global, true);
+        } else {
+          reject({ fileExist: true, rejected: true });
+        }
+      });
+    }
+  });
+}
+
 
 /**
  * Creates a global script file.
@@ -142,6 +260,22 @@ function checkDirectoryExists(directoryPath: string): boolean {
     return false;
   }
 }
+
+
+/**
+ * Checks if a file exists at the specified file path.
+ * @param filePath - The path of the file to check.
+ * @returns `true` if the file exists, `false` otherwise.
+ */
+function checkFileExists(filePath: string) {
+  try {
+    fs.accessSync(filePath, fs.constants.F_OK);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
 
 /**
  * Applies a script to the selected text in the active editor.
@@ -266,7 +400,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('scriptify.createScript', createScriptFile),
     vscode.commands.registerCommand('scriptify.createGlobalScript', createGlobalScriptFile),
-    vscode.commands.registerCommand('scriptify.applyScript', applyScript)
+    vscode.commands.registerCommand('scriptify.applyScript', applyScript),
+    vscode.commands.registerCommand('scriptify.downloadScript', downloadScript)
   );
 }
 
