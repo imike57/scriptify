@@ -3,14 +3,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as os from 'os';
 import * as lvp from "live-plugin-manager";
+import axios from "axios";
+import { checkDirectoryExists, checkFileExists, getGlobalFolder, getScriptFiles, getVersion, getWorkspaceFolder, sanitizeFileName, writeScriptFile } from './utils';
+import { GithubFile, ScriptFile } from './types';
 
-/** Represent a script file. */
-interface ScriptFile {
-  name: string;
-  uri: string;
-}
 
 /**
  * Represents the `Scriptify` output channel.
@@ -18,62 +15,61 @@ interface ScriptFile {
 const outputChannel = vscode.window.createOutputChannel('Scriptify');
 
 /**
- * Retrieves the global folder location specified in the workspace configuration.
- * If not configured, it returns the operating system's temporary directory.
- * @returns The global folder location.
+ * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
  */
-function getGlobalFolder(): string {
-  return vscode.workspace.getConfiguration('scriptify').get<string>('globalFolderLocation') || os.tmpdir();
+function downloadScript() {
+
+  const githubExampleFolderAPI = `https://api.github.com/repos/imike57/scriptify/contents/examples?ref=${getVersion()}`;
+
+  axios<GithubFile[]>({
+    method: "get",
+    url: githubExampleFolderAPI,
+    responseType: "json"
+  }).then(results => {
+    const list = results.data.map(entry => {
+      return entry.name;
+    })
+    vscode.window.showQuickPick(list).then(fileName => {
+
+      if (fileName) {
+        const selectedFile = results.data.find(file => file.name === fileName);
+        const scriptName = path.parse(fileName).name;
+
+        if (selectedFile) {
+          axios({
+            method: "get",
+            url: selectedFile.download_url,
+            responseType: "text"
+          }).then(fileContent => {
+            vscode.window.showInformationMessage(fileContent.data);
+
+            vscode.window.showQuickPick(["Install globally", "Install locally"]).then(choice => {
+              writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
+
+            });
+
+          });
+
+        }
+      }
+    });
+
+
+  });
 }
 
-/**
- * Retrieves the workspace folder path.
- * @param ignoreErrors Whether to ignore errors and return null if no workspace folders are open.
- * @returns The workspace folder path, or null if no workspace folders are open and ignoreErrors is set to true.
- * @throws An error if no folder is open and ignoreErrors is set to false.
- */
-function getWorkspaceFolder(ignoreErrors = false): string | null {
-  const { workspaceFolders } = vscode.workspace;
-  if (!workspaceFolders || workspaceFolders.length === 0) {
-    if (!ignoreErrors) {
-      throw new Error('No folder open. Add a folder to your workspace, or create a global script file instead.');
-    }
-    return null;
-  }
-  if (workspaceFolders.length > 1) {
-    if (!ignoreErrors) {
-      throw new Error('Local script files cannot be created on workspaces with multiple folders open. Create a global script file instead.');
-    }
-    return null;
-  }
-  return workspaceFolders[0].uri.fsPath;
-}
 
 /**
  * Creates a script file in the current workspace or globally.
  * @param createGlobally Specifies whether to create the script globally.
  */
 function createScriptFile(createGlobally = false) {
-  let workspaceFolder: string;
-  if (!createGlobally) {
-    try {
-      workspaceFolder = getWorkspaceFolder() || "";
-    } catch (err) {
-      return vscode.window.showErrorMessage(`${err}`);
-    }
-  }
 
   vscode.window.showInputBox({
     prompt: "Enter script name"
   }).then(scriptName => {
     if (scriptName) {
-      const parentPath = createGlobally ? getGlobalFolder() : workspaceFolder;
-      const scriptFolder = path.join(parentPath, '.scriptify');
-      if (!fs.existsSync(scriptFolder)) {
-        fs.mkdirSync(scriptFolder);
-      }
 
-      const scriptPath = path.join(scriptFolder, `${sanitizeFileName(scriptName)}.js`);
       const scriptContent = `
 function transform(value) {
   // TODO: Implement your transformation logic here
@@ -83,14 +79,12 @@ function transform(value) {
 module.exports = transform;
 `;
 
-      fs.writeFileSync(scriptPath, scriptContent);
+      writeScriptFile(scriptName, scriptContent, createGlobally);
 
-      vscode.workspace.openTextDocument(scriptPath).then(doc => vscode.window.showTextDocument(doc));
-
-      vscode.window.showInformationMessage(`Script "${scriptName}" created successfully.`);
     }
   });
 }
+
 
 /**
  * Creates a global script file.
@@ -99,49 +93,8 @@ function createGlobalScriptFile() {
   createScriptFile(true);
 }
 
-/**
- * Sanitizes a file name by replacing invalid characters with a specified replacement character.
- * @param fileName The file name to sanitize.
- * @param replacementChar The character to use as a replacement for invalid characters.
- * @returns The sanitized file name.
- */
-function sanitizeFileName(fileName: string, replacementChar: string = '-'): string {
-  const invalidCharsRegex = /[\W]/g;
-  return fileName.replace(invalidCharsRegex, replacementChar);
-}
 
-/**
- * Retrieves the script files located in the specified parent path.
- * @param parentPath The parent path where the script files are located.
- * @returns An array of script files.
- */
-function getScriptFiles(parentPath: string): ScriptFile[] {
-  const scriptFolder = path.join(parentPath || '', '.scriptify');
-  if (!fs.existsSync(scriptFolder)) {
-    return [];
-  }
 
-  return fs.readdirSync(scriptFolder)
-    .filter(f => f.endsWith('.js'))
-    .map(f => ({
-      name: f.replace(/\.js$/g, ""),
-      uri: path.join(scriptFolder, f),
-    }));
-}
-
-/**
- * Checks if a directory exists at the specified path.
- * @param directoryPath The path of the directory to check.
- * @returns true if the directory exists, false otherwise.
- */
-function checkDirectoryExists(directoryPath: string): boolean {
-  try {
-    const stat = fs.statSync(directoryPath);
-    return stat.isDirectory();
-  } catch (error) {
-    return false;
-  }
-}
 
 /**
  * Applies a script to the selected text in the active editor.
@@ -171,7 +124,6 @@ function applyScript() {
           return;
         }
         const scriptPath = file.uri;
-        console.log("scriptPath", scriptPath);
 
         var scriptString = fs.readFileSync(scriptPath, "utf-8");
 
@@ -198,7 +150,7 @@ function applyScript() {
 
             Promise.all(transformedTexts).then(tTexts => {
               editor.edit(editBuilder => {
-                selections.forEach( (selection, index) => {
+                selections.forEach((selection, index) => {
                   editBuilder.replace(selection, tTexts[index]);
                 });
               }).then(success => {
@@ -210,7 +162,7 @@ function applyScript() {
               });
             });
 
-            
+
           }
         };
 
@@ -266,11 +218,12 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('scriptify.createScript', createScriptFile),
     vscode.commands.registerCommand('scriptify.createGlobalScript', createGlobalScriptFile),
-    vscode.commands.registerCommand('scriptify.applyScript', applyScript)
+    vscode.commands.registerCommand('scriptify.applyScript', applyScript),
+    vscode.commands.registerCommand('scriptify.downloadScript', downloadScript)
   );
 }
 
 /**
  * This method is called when your extension is deactivated.
  */
-export function deactivate() {}
+export function deactivate() { }

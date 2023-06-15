@@ -1,5 +1,11 @@
 # Change Log
 
+## next
+- Asynchronous script handling.
+- Added "dummyjson.json" example.
+- Added ability to download an example script to local or global space from Github repo.
+- Alert when attempting to write an existing script.
+
 ## 0.2.0
 - Implement dynamic installation of dependencies using live-plugin-manager.
 - Sanitized file names to ensure compatibility.
@@ -9,8 +15,7 @@
 Create a script as global.
 
 ## 0.0.3
-Apply a script to multiple cursor.
+Apply a script to multiple cursors.
 
 ## [Unreleased]
-
 - Initial release
