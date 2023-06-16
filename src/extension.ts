@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as lvp from "live-plugin-manager";
 import axios from "axios";
-import { checkDirectoryExists, checkFileExists, getGlobalFolder, getScriptFiles, getVersion, getWorkspaceFolder, sanitizeFileName, writeScriptFile } from './utils';
+import { checkDirectoryExists, getGlobalFolder, getScriptFiles, getVersion, getWorkspaceFolder, writeScriptFile } from './utils';
 import { GithubFile, ScriptFile } from './types';
 
 
@@ -18,8 +18,8 @@ const outputChannel = vscode.window.createOutputChannel('Scriptify');
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
  */
 function downloadScript() {
-
-  const githubExampleFolderAPI = `https://api.github.com/repos/imike57/scriptify/contents/examples?ref=${getVersion()}`;
+  const source = vscode.workspace.getConfiguration('scriptify').get<string>("scriptDownloadLocation") || getVersion();
+  const githubExampleFolderAPI = `https://api.github.com/repos/imike57/scriptify/contents/examples?ref=${source}`;
 
   axios<GithubFile[]>({
     method: "get",
@@ -29,7 +29,7 @@ function downloadScript() {
     const list = results.data.map(entry => {
       return entry.name;
     })
-    vscode.window.showQuickPick(list).then(fileName => {
+    vscode.window.showQuickPick(list, { title: `Select a script (${source})`}).then(fileName => {
 
       if (fileName) {
         const selectedFile = results.data.find(file => file.name === fileName);
@@ -44,7 +44,9 @@ function downloadScript() {
             vscode.window.showInformationMessage(fileContent.data);
 
             vscode.window.showQuickPick(["Install globally", "Install locally"]).then(choice => {
-              writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
+              if (choice) {
+                writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
+              }
 
             });
 
@@ -209,6 +211,52 @@ function applyScript() {
     }
   });
 }
+/**
+ * This function `switchScriptSource` is responsible for switching the script source.
+ * It retrieves a list of sources from the Github repo, and then displays the list to the user
+ * as a quick pick menu. The user's choice is stored in the `choice` variable.
+ * If the choice is valid (i.e., included in the list), it updates the `scriptDownloadLocation`
+ * configuration setting for the 'scriptify' extension in the global scope.
+ * 
+ * @returns {void}
+ */
+function switchScriptSource(){
+
+  const sources = ["https://api.github.com/repos/imike57/scriptify/branches", "https://api.github.com/repos/imike57/scriptify/tags"];
+
+  Promise.all(sources.map(url => {
+    return axios<{name:string}[]>({
+      method: "get",
+      url: url,
+      responseType: "json"
+    });
+  })).then(results => {
+
+    const list = [...results[0].data, ...results[1].data].map(el => el.name).concat(['default']);
+
+
+    vscode.window.showQuickPick(list).then(choice => {
+
+      console.log(choice);
+
+      if (choice && list.includes(choice)) {
+        if (choice === "default") {
+          choice = undefined;
+        }
+        vscode.workspace.getConfiguration('scriptify').update('scriptDownloadLocation', choice, vscode.ConfigurationTarget.Global).then(res => {
+          console.log("res", res);
+          vscode.window.showInformationMessage('Source updated');
+        });
+      }
+
+    });
+  });
+}
+
+/** Open the configuration panel */
+function openConfiguration(){
+  vscode.commands.executeCommand("workbench.action.openSettings", "scriptify");
+}
 
 /**
  * This method is called when the extension is activated.
@@ -219,7 +267,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.createScript', createScriptFile),
     vscode.commands.registerCommand('scriptify.createGlobalScript', createGlobalScriptFile),
     vscode.commands.registerCommand('scriptify.applyScript', applyScript),
-    vscode.commands.registerCommand('scriptify.downloadScript', downloadScript)
+    vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
+    vscode.commands.registerCommand('scriptify.switchScriptSource', switchScriptSource),
+    vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration)
   );
 }
 
