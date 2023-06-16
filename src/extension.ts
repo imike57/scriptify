@@ -270,6 +270,13 @@ function openConfiguration(){
   vscode.commands.executeCommand("workbench.action.openSettings", "scriptify");
 }
 
+/** Open the global folder */
+function openGlobalFolder(){
+  const globalPathFolder = path.join(getGlobalFolder(), ".scriptify");
+  const folderUri = vscode.Uri.file(globalPathFolder);
+  vscode.env.openExternal(folderUri);
+}
+
 /**
  * This method is called when the extension is activated.
  * The extension is activated the very first time the command is executed.
@@ -281,7 +288,8 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.applyScript', applyScript),
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
     vscode.commands.registerCommand('scriptify.switchScriptSource', switchScriptSource),
-    vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration)
+    vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
+    vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder)
   );
 }
 

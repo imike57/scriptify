@@ -39,6 +39,10 @@
       {
         "command": "scriptify.openConfiguration",
         "title": "[Scriptify]: Open the configuration panel"
+      },
+      {
+        "command": "scriptify.openGlobalFolder",
+        "title": "[Scriptify]: Open the global folder"
       }
     ],
     "configuration": {
