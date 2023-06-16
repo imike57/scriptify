@@ -1,8 +1,10 @@
 # Change Log
 
-## next
-- Add command to switch download source for scripts (branch or tag)
-- Add command to open the configuration panel.
+## Next
+- Add a command to switch the download source for scripts (branch or tag).
+- Add a command to open the configuration panel.
+- Expose some global variables and methods such as `_log()`, `_axios`, and more.
+- Replace the `outputChannel` variable with `_outputChannel`.
 
 ## 0.3.0
 - Asynchronous script handling.

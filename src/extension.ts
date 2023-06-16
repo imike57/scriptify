@@ -8,11 +8,23 @@ import axios from "axios";
 import { checkDirectoryExists, getGlobalFolder, getScriptFiles, getVersion, getWorkspaceFolder, writeScriptFile } from './utils';
 import { GithubFile, ScriptFile } from './types';
 
+/** Expose easy way to log  */
+function _log(...data:any[])  {
+  _outputChannel.show(true);
+  data.forEach(el => {
+    _outputChannel.append(el);
+    _outputChannel.append("\r");
+  });
+
+}
+
+/** Expose axios for scripts */
+const _axios = axios;
 
 /**
  * Represents the `Scriptify` output channel.
  */
-const outputChannel = vscode.window.createOutputChannel('Scriptify');
+var _outputChannel = vscode.window.createOutputChannel('Scriptify', 'javascript');
 
 /**
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
@@ -162,6 +174,9 @@ function applyScript() {
                   vscode.window.showErrorMessage('Failed to apply script.');
                 }
               });
+            }).catch(err => {
+              console.error(err);
+              _log(err);
             });
 
 
@@ -205,8 +220,8 @@ function applyScript() {
         }
       } catch (error: any) {
         console.log(error);
-        outputChannel.show(true);
-        outputChannel.append(error);
+        _outputChannel.show(true);
+        _outputChannel.append(error);
       }
     }
   });
@@ -258,6 +273,13 @@ function openConfiguration(){
   vscode.commands.executeCommand("workbench.action.openSettings", "scriptify");
 }
 
+/** Open the global folder */
+function openGlobalFolder(){
+  const globalPathFolder = path.join(getGlobalFolder(), ".scriptify");
+  const folderUri = vscode.Uri.file(globalPathFolder);
+  vscode.env.openExternal(folderUri);
+}
+
 /**
  * This method is called when the extension is activated.
  * The extension is activated the very first time the command is executed.
@@ -269,7 +291,8 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.applyScript', applyScript),
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
     vscode.commands.registerCommand('scriptify.switchScriptSource', switchScriptSource),
-    vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration)
+    vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
+    vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder)
   );
 }
 
