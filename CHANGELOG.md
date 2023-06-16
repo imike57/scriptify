@@ -1,5 +1,9 @@
 # Change Log
 
+## next
+- Add command to switch download source for scripts (branch or tag)
+- Add command to open the configuration panel.
+
 ## 0.3.0
 - Asynchronous script handling.
 - Added "dummyjson.json" example.
