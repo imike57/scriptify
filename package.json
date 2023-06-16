@@ -18,19 +18,27 @@
     "commands": [
       {
         "command": "scriptify.createScript",
-        "title": "Scriptify: Create New Script"
+        "title": "[Scriptify]: Create New Script"
       },
       {
         "command": "scriptify.createGlobalScript",
-        "title": "Scriptify: Create New Global Script"
+        "title": "[Scriptify]: Create New Global Script"
       },
       {
         "command": "scriptify.applyScript",
-        "title": "Scriptify: Apply Script"
+        "title": "[Scriptify]: Apply Script"
       },
       {
         "command": "scriptify.downloadScript",
-        "title": "Scriptify: Download Script from examples"
+        "title": "[Scriptify]: Download Script from examples"
+      },
+      {
+        "command": "scriptify.switchScriptSource",
+        "title": "[Scriptify]: Switch download source for scripts (branch or tag)"
+      },
+      {
+        "command": "scriptify.openConfiguration",
+        "title": "[Scriptify]: Open the configuration panel"
       }
     ],
     "configuration": {
@@ -40,6 +48,11 @@
           "type": "string",
           "default": null,
           "description": "Overrides the default global folder location. Defaults to your computer's temp directory. On Windows this is: C:\\Users\\<your user name>\\AppData\\Local\\Temp"
+        },
+        "scriptify.scriptDownloadLocation": {
+          "type": "string",
+          "default": null,
+          "description": "Define a download source for scripts, which can either be a tag or branch of the main repository. By default, the current extension version is used."
         }
       }
     }
