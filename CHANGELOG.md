@@ -1,6 +1,6 @@
 # Change Log
 
-## Next
+## 1.0.0
 - Add a command to switch the download source for scripts (branch or tag).
 - Add a command to open the configuration panel.
 - Expose some global variables and methods such as `_log()`, `_axios`, and more.
