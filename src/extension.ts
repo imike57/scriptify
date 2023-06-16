@@ -174,6 +174,9 @@ function applyScript() {
                   vscode.window.showErrorMessage('Failed to apply script.');
                 }
               });
+            }).catch(err => {
+              console.error(err);
+              _log(err);
             });
 
 
