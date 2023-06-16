@@ -57,8 +57,6 @@ function transform(value) {
 
             res.on('end', () => {
               const json = JSON.parse(data);
-              console.log(JSON.stringify(json));
-
               progress.report({
                 increment: 100,
                 message: `Done`
@@ -68,7 +66,7 @@ function transform(value) {
           });
 
           req.on('error', (error) => {
-            console.error(error);
+            _log(error);
             reject(error);
           });
 
@@ -76,7 +74,7 @@ function transform(value) {
         });
       });
     }).catch(err => {
-      console.log(err);
+      _log(err);
     });
   });
 }

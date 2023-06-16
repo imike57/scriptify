@@ -67,10 +67,59 @@ function transform(value) {
 
 module.exports = transform;
 ```
+## Using Global Variables
+
+Scripts are evaluated on the fly and inherit exposed functionalities so that they can be used directly in your scripts without prior declaration.
+
+### _log()
+The `_log` function is exposed and allows you to add logs to the VS Code output panel directly from your scripts. This can be useful for debugging your scripts or displaying output data.
+
+```js
+_log("Something to log")
+```
+
+You can also use the global variable [_outputChannel](https://code.visualstudio.com/api/references/vscode-api#OutputChannel) to utilize API methods.
+
+```js
+_outputChannel.clear()
+```
+
+### vscode
+The `vscode` variable is exposed and allows you to interact with the VS Code API directly from your scripts.
+
+For example, you can display an input box to prompt the user for a value:
+```js
+vscode.window.showInputBox({
+  prompt: "Choose something..."
+}).then(value => {
+  // Do something with the selected value
+});
+```
+
+[VS Code API](https://code.visualstudio.com/api/references/vscode-api)
+
+### NodeJS
+Scripts are executed in a NodeJS environment. As a result, you have access to NodeJS-specific functionalities such as `fs`, `path`, `http`, and more.
+
+You can import them as usual:
+
+```js
+const fs = require('fs');
+```
+
+[Node JS API](https://nodejs.org/api/)
+
+### _axios
+Axios is a particularly useful library for making asynchronous requests. It is not compatible with the use of `_require()`. However, we have exposed it under the global variable `_axios`.
+
+[Axios](https://www.npmjs.com/package/axios)
 
 ## Contributing
 
 Contributions to Scriptify are welcome! If you encounter any issues or have suggestions for improvements, please open an issue in the [GitHub repository](https://github.com/imike57/scriptify/issues).
+
+### Partager un script
+Vous avez créé un script que vous souhaitez partager ? N'hésitez pas à faire une pull-request et ajouter vos scripts dans le dossier `examples` du repository. 
 
 ## Special Thanks
 

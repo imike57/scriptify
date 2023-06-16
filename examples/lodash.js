@@ -7,10 +7,8 @@ function transform(value) {
         const lodashFns = Object.entries(_).filter(el => typeof el[1] === "function");
         const keys = lodashFns.map(el => el[0]);
         vscode.window.showQuickPick(keys).then(async val => {
-            outputChannel.clear();
-            outputChannel.show(true);
 
-            outputChannel.append(`${val}\r`);
+            _log(`${val}`);
 
             const getFnParams = (fn) => {
                 return fn.toString()
@@ -32,13 +30,10 @@ function transform(value) {
                 });
             }
 
-            outputChannel.append("Your params: ");
-            outputChannel.append(userParams);
-            outputChannel.append("\r");
+            _log("Your params: ", userParams);
 
             const result = fn(...userParams);
-            outputChannel.append("Result: ");
-            outputChannel.append(result);
+            _log("Result: ", result);
 
             if (typeof result === "object") {
               resolve(JSON.stringify(fn.apply(null, userParams ))) ;
