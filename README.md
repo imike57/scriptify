@@ -16,14 +16,19 @@ Scriptify is a Visual Studio Code extension that allows you to create and apply 
 
 2. Open your project in Visual Studio Code.
 
-3. To create a new script file, open the command palette (Ctrl/Cmd + Shift + P) and search for "Scriptify: Create Script". Enter a name for the script when prompted, and a new script file will be created in the ".scriptify" folder.
+3. To create a new script file, open the command palette (Ctrl/Cmd + Shift + P) and search for "[Scriptify]: Create Script". Enter a name for the script when prompted, and a new script file will be created in the ".scriptify" folder.
 
 4. To apply a script to the current selection, open the command palette (Ctrl/Cmd + Shift + P) and search for "Scriptify: Apply Script". Select a script from the displayed list, and the transformation defined in the script will be applied to the selected value.
 
-### Managing Scripts
+### Commands
 
-- **Global Scripts**: Global scripts are stored in a global folder location. To create a global script, use the `Scriptify: Create Global Script` command. Global scripts can be used across multiple workspaces.
-- **Workspace Scripts**: Workspace scripts are stored in the current workspace folder. To create a workspace script, use the `Scriptify: Create Script` command without the global option. Workspace scripts are specific to the current workspace.
+- `[Scriptify]: Create New Script`: Creates a new script in your workspace folder.
+- `[Scriptify]: Create New Global Script`: Creates a new script in your global folder.
+- `[Scriptify]: Apply Script`: Applies an existing script.
+- `[Scriptify]: Download Script from Examples`: Retrieves a list of scripts from the repository and installs them in your local or global folder.
+- `[Scriptify]: Switch Download Source for Scripts (Branch or Tag)`: Changes the download source for example scripts. Default: Your current extension version. 
+- `[Scriptify]: Open the Configuration Panel`: Shortcut to open the configuration panel.
+- `[Scriptify]: Open the Global Folder`: Opens the global folder location in your file explorer.
 
 
 ## Configuration
@@ -31,6 +36,8 @@ Scriptify is a Visual Studio Code extension that allows you to create and apply 
 The Scriptify extension provides the following configuration options:
 
 - **Global Folder Location**: Specifies the location of the global folder where global scripts are stored. You can change this setting by updating the `scriptify.globalFolderLocation` configuration value.
+
+- **Script Download Location**: Define a download source for scripts, which can either be a tag or branch of the main repository. By default, the current extension version is used. You can change this setting by updating the `scriptify.scriptDownloadLocation` configuration value.
 
 
 ## Example
@@ -118,8 +125,8 @@ Axios is a particularly useful library for making asynchronous requests. It is n
 
 Contributions to Scriptify are welcome! If you encounter any issues or have suggestions for improvements, please open an issue in the [GitHub repository](https://github.com/imike57/scriptify/issues).
 
-### Partager un script
-Vous avez créé un script que vous souhaitez partager ? N'hésitez pas à faire une pull-request et ajouter vos scripts dans le dossier `examples` du repository. 
+### Sharing a Script
+Have you created a script that you would like to share? Feel free to make a pull request and add your scripts to the `examples` folder of the repository.
 
 ## Special Thanks
 
