@@ -13,8 +13,6 @@ function transform(value) {
     }).then(selectedItem => {
 
       if (selectedItem) {
-
-
         const pickOptions = [
           `get all`,
           `get one`

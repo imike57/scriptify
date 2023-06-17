@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.0
+- fix `dummyjson` example
+- add `openai` example
+
 ## 1.0.0
 - Add a command to switch the download source for scripts (branch or tag).
 - Add a command to open the configuration panel.
