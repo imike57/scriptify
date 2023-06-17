@@ -93,7 +93,12 @@
     "Scriptify",
     "Apply",
     "Create",
-    "JS"
+    "JS",
+    "gpt",
+    "openai",
+    "lodash",
+    "dummyjson",
+    "transform"
   ],
   "dependencies": {
     "axios": "^1.4.0",
