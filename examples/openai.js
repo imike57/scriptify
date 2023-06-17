@@ -7,7 +7,7 @@ function transform(question) {
     return new Promise(async (resolve, reject) => {
 
         try {
-            const response = await _axios.post('https://api.openai.com/v1/completions', {
+            const response = await scriptify.axios.post('https://api.openai.com/v1/completions', {
                 model: 'text-davinci-003',
                 prompt: question,
                 temperature: 0,
