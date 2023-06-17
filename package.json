@@ -43,10 +43,6 @@
       {
         "command": "scriptify.openGlobalFolder",
         "title": "[Scriptify]: Open the global folder"
-      },
-      {
-        "command": "scriptify.installDependency",
-        "title": "[Scriptify]: Install dependency"
       }
     ],
     "configuration": {
