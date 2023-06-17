@@ -16,9 +16,9 @@ Scriptify is a Visual Studio Code extension that allows you to create and apply 
 
 2. Open your project in Visual Studio Code.
 
-3. To create a new script file, open the command palette (Ctrl/Cmd + Shift + P) and search for "[Scriptify]: Create Script". Enter a name for the script when prompted, and a new script file will be created in the ".scriptify" folder.
+3. To create a new script file, open the command palette (Ctrl/Cmd + Shift + P) and search for "[Scriptify]: Create New Script". Enter a name for the script when prompted, and a new script file will be created in the ".scriptify" folder.
 
-4. To apply a script to the current selection, open the command palette (Ctrl/Cmd + Shift + P) and search for "Scriptify: Apply Script". Select a script from the displayed list, and the transformation defined in the script will be applied to the selected value.
+4. To apply a script to the current selection, open the command palette (Ctrl/Cmd + Shift + P) and search for "[Scriptify]: Apply Script". Select a script from the displayed list, and the transformation defined in the script will be applied to the selected value.
 
 ### Commands
 
@@ -26,10 +26,9 @@ Scriptify is a Visual Studio Code extension that allows you to create and apply 
 - `[Scriptify]: Create New Global Script`: Creates a new script in your global folder.
 - `[Scriptify]: Apply Script`: Applies an existing script.
 - `[Scriptify]: Download Script from Examples`: Retrieves a list of scripts from the repository and installs them in your local or global folder.
-- `[Scriptify]: Switch Download Source for Scripts (Branch or Tag)`: Changes the download source for example scripts. Default: Your current extension version. 
+- `[Scriptify]: Switch Download Source for Scripts (Branch or Tag)`: Changes the download source for example scripts. Default: Your current extension version.
 - `[Scriptify]: Open the Configuration Panel`: Shortcut to open the configuration panel.
 - `[Scriptify]: Open the Global Folder`: Opens the global folder location in your file explorer.
-
 
 ## Configuration
 
@@ -39,57 +38,20 @@ The Scriptify extension provides the following configuration options:
 
 - **Script Download Location**: Define a download source for scripts, which can either be a tag or branch of the main repository. By default, the current extension version is used. You can change this setting by updating the `scriptify.scriptDownloadLocation` configuration value.
 
-
 ## Example
 
-### Transform to lowerCase a selection
+### Transform to lowercase a selection
 ```js
-
 function transform(value) {
   return value.toLowerCase();
 }
 
 module.exports = transform;
-
 ```
 
-## Usage of Dependencies in Scripts
-
-The Scriptify extension allows you to use external dependencies in your script files without requiring manual installation. The extension handles the installation of dependencies on-the-fly using the `live-plugin-manager` package.
-
-To use dependencies in your script, follow these steps:
-
-1. In your script file, use the `_require` function provided by Scriptify to import the desired dependency. For example, to import the `kebabCase` function from the `lodash` package, you can use the following code:
-
-```javascript
-const _ = _require('lodash');
-```
-
-2. You can then use the imported functions or objects from the dependency within your transformation logic. For example, to transform a value using the `kebabCase` function from `lodash`, you can write the following code:
-
-```javascript
-function transform(value) {
-  return _.kebabCase(value);
-}
-
-module.exports = transform;
-```
 ## Using Global Variables
 
 Scripts are evaluated on the fly and inherit exposed functionalities so that they can be used directly in your scripts without prior declaration.
-
-### _log()
-The `_log` function is exposed and allows you to add logs to the VS Code output panel directly from your scripts. This can be useful for debugging your scripts or displaying output data.
-
-```js
-_log("Something to log")
-```
-
-You can also use the global variable [_outputChannel](https://code.visualstudio.com/api/references/vscode-api#OutputChannel) to utilize API methods.
-
-```js
-_outputChannel.clear()
-```
 
 ### vscode
 The `vscode` variable is exposed and allows you to interact with the VS Code API directly from your scripts.
@@ -105,8 +67,10 @@ vscode.window.showInputBox({
 
 [VS Code API](https://code.visualstudio.com/api/references/vscode-api)
 
-### NodeJS
-Scripts are executed in a NodeJS environment. As a result, you have access to NodeJS-specific functionalities such as `fs`, `path`, `http`, and more.
+### Node.js
+Scripts are executed in a Node.js environment. As a result
+
+, you have access to Node.js-specific functionalities such as `fs`, `path`, `http`, and more.
 
 You can import them as usual:
 
@@ -114,12 +78,73 @@ You can import them as usual:
 const fs = require('fs');
 ```
 
-[Node JS API](https://nodejs.org/api/)
+[Node.js API](https://nodejs.org/api/)
 
-### _axios
-Axios is a particularly useful library for making asynchronous requests. It is not compatible with the use of `_require()`. However, we have exposed it under the global variable `_axios`.
+### scriptify
+The `scriptify` object exposes some tools and methods and can be used directly in your scripts.
+
+#### scriptify.version
+
+`scriptify.version` returns the current extension version.
+
+#### scriptify.axios
+
+Axios is a particularly useful library for making asynchronous requests.
 
 [Axios](https://www.npmjs.com/package/axios)
+
+```js
+scriptify.axios.get('...')
+```
+
+#### scriptify.log()
+The `scriptify.log()` function allows you to add logs to the VS Code output panel directly from your scripts. This can be useful for debugging your scripts or displaying output data.
+
+```js
+scriptify.log("Something to log", "Something else")
+```
+
+#### scriptify.outputChannel
+
+`scriptify.outputChannel` is an instance of the Scriptify output Channel of VS Code.
+
+```js
+scriptify.outputChannel.clear()
+```
+
+[OutputChannel](https://code.visualstudio.com/api/references/vscode-api#OutputChannel)
+
+#### scriptify.pkg
+
+`scriptify.pkg` is an instance of `live-plugin-manager`, which allows you to install dependencies on the fly.
+
+To use dependencies in your script, follow these steps:
+
+```js
+async function transform(value) {
+  await scriptify.pkg.install('lodash');
+  const _ = scriptify.pkg.require('lodash');
+  return _.camelCase(value);
+}
+
+module.exports = transform;
+```
+
+### _require()
+
+The `_require()` alias allows you to install dependencies before executing the script.
+
+For example, to import the `kebabCase` function from the `lodash` package, you can use the following code:
+
+```javascript
+const _ = _require('lodash');
+
+function transform(value) {
+  return _.kebabCase(value);
+}
+
+module.exports = transform;
+```
 
 ## Contributing
 
@@ -134,8 +159,6 @@ Special thanks to the following contributors who have helped improve and enhance
 
 - [Jordan Skousen](https://github.com/JordanSkousen): for implementing the support for global scripts and the seamless usage of dependencies using the [live-plugin-manager](https://github.com/davideicardi/live-plugin-manager) package.
 
-
 ## License
 
 This extension is licensed under the MIT License.
-

@@ -8,8 +8,10 @@ import axios from "axios";
 import { checkDirectoryExists, getGlobalFolder, getScriptFiles, getVersion, getWorkspaceFolder, writeScriptFile } from './utils';
 import { GithubFile, ScriptFile } from './types';
 
-
 class Scriptify {
+
+  /** Current extension version */
+  version = getVersion();
   
   pkgPath = path.join(getGlobalFolder(), '.scriptify', 'packages');
 
@@ -18,27 +20,36 @@ class Scriptify {
    */
   outputChannel = vscode.window.createOutputChannel('Scriptify', 'javascript');
 
-  /** live package manager instance */
+  /** 
+   * live package manager instance 
+   */
   pkg = new lvp.PluginManager({ pluginsPath: this.pkgPath });
 
-  /** axios */
+  /** 
+   * Axios library for making HTTP requests.
+   */
   axios = axios;
 
-  /** vscode */
+  /** 
+   * VS Code API for interacting with Visual Studio Code.
+   */
   vscode = vscode;
 
-  /** Use outputChannel to log */
+  /** 
+   * Use outputChannel to log messages.
+   * @param {...any} data - The data to be logged.
+   */
   log(...data:any[])  {
     this.outputChannel.show(true);
     data.forEach(el => {
       this.outputChannel.append(el);
       this.outputChannel.append("\r");
     });
-  
   }
 }
 
 const scriptify = new Scriptify();
+
 
 
 
