@@ -69,7 +69,7 @@ function transform(value) {
               });
 
               req.on('error', (error) => {
-                _log(error);
+                scriptify.log(error);
                 reject(error);
               });
 
@@ -81,7 +81,7 @@ function transform(value) {
 
       }
     }).catch(err => {
-      _log(err);
+      scriptify.log(err);
     });
   });
 }

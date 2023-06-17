@@ -8,7 +8,7 @@ function transform(value) {
         const keys = lodashFns.map(el => el[0]);
         vscode.window.showQuickPick(keys).then(async val => {
 
-            _log(`${val}`);
+            scriptify.log(`${val}`);
 
             const getFnParams = (fn) => {
                 return fn.toString()
@@ -30,10 +30,10 @@ function transform(value) {
                 });
             }
 
-            _log("Your params: ", userParams);
+            scriptify.log("Your params: ", userParams);
 
             const result = fn(...userParams);
-            _log("Result: ", result);
+            scriptify.log("Result: ", result);
 
             if (typeof result === "object") {
               resolve(JSON.stringify(fn.apply(null, userParams ))) ;

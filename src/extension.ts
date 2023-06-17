@@ -8,23 +8,39 @@ import axios from "axios";
 import { checkDirectoryExists, getGlobalFolder, getScriptFiles, getVersion, getWorkspaceFolder, writeScriptFile } from './utils';
 import { GithubFile, ScriptFile } from './types';
 
-/** Expose easy way to log  */
-function _log(...data:any[])  {
-  _outputChannel.show(true);
-  data.forEach(el => {
-    _outputChannel.append(el);
-    _outputChannel.append("\r");
-  });
 
+class Scriptify {
+  
+  pkgPath = path.join(getGlobalFolder(), '.scriptify', 'packages');
+
+  /**
+   * Represents the `Scriptify` output channel.
+   */
+  outputChannel = vscode.window.createOutputChannel('Scriptify', 'javascript');
+
+  /** live package manager instance */
+  pkg = new lvp.PluginManager({ pluginsPath: this.pkgPath });
+
+  /** axios */
+  axios = axios;
+
+  /** vscode */
+  vscode = vscode;
+
+  /** Use outputChannel to log */
+  log(...data:any[])  {
+    this.outputChannel.show(true);
+    data.forEach(el => {
+      this.outputChannel.append(el);
+      this.outputChannel.append("\r");
+    });
+  
+  }
 }
 
-/** Expose axios for scripts */
-const _axios = axios;
+const scriptify = new Scriptify();
 
-/**
- * Represents the `Scriptify` output channel.
- */
-var _outputChannel = vscode.window.createOutputChannel('Scriptify', 'javascript');
+
 
 /**
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
@@ -67,8 +83,6 @@ function downloadScript() {
         }
       }
     });
-
-
   });
 }
 
@@ -144,10 +158,8 @@ function applyScript() {
         // Find all the times _require() is called by the script
         const scriptRequires = scriptString.match(/_require\(["'`].+["'`]\)/g)?.map(i => i.substring("_require('".length, i.length - "')".length));
 
-        const managerPath = path.join(getGlobalFolder(), '.scriptify', 'packages');
-        const manager = new lvp.PluginManager({ pluginsPath: managerPath });
         // Create the _require alias
-        const _require = manager.require.bind(manager);
+        const _require = scriptify.pkg.require.bind(scriptify.pkg);
 
         const execute = () => {
           // Call the script
@@ -176,7 +188,7 @@ function applyScript() {
               });
             }).catch(err => {
               console.error(err);
-              _log(err);
+              scriptify.log(err);
             });
 
 
@@ -198,7 +210,7 @@ function applyScript() {
                 return;
               }
 
-              const packageDirectoryExist = checkDirectoryExists(path.join(managerPath, pkg));
+              const packageDirectoryExist = checkDirectoryExists(path.join(scriptify.pkgPath, pkg));
 
               progress.report({
                 increment: scriptRequires.indexOf(pkg) / scriptRequires.length * 100,
@@ -206,10 +218,10 @@ function applyScript() {
               });
 
               // Install from cache if exist.
-              if (checkDirectoryExists(path.join(managerPath, pkg))) {
-                await manager.installFromPath(path.join(managerPath, pkg));
+              if (packageDirectoryExist) {
+                await scriptify.pkg.installFromPath(path.join(scriptify.pkgPath, pkg));
               } else {
-                await manager.install(pkg);
+                await scriptify.pkg.install(pkg);
               }
             }
             execute();
@@ -219,9 +231,7 @@ function applyScript() {
           execute();
         }
       } catch (error: any) {
-        console.log(error);
-        _outputChannel.show(true);
-        _outputChannel.append(error);
+        scriptify.log(error);
       }
     }
   });
@@ -252,14 +262,11 @@ function switchScriptSource(){
 
     vscode.window.showQuickPick(list).then(choice => {
 
-      console.log(choice);
-
       if (choice && list.includes(choice)) {
         if (choice === "default") {
           choice = undefined;
         }
         vscode.workspace.getConfiguration('scriptify').update('scriptDownloadLocation', choice, vscode.ConfigurationTarget.Global).then(res => {
-          console.log("res", res);
           vscode.window.showInformationMessage('Source updated');
         });
       }
@@ -279,6 +286,7 @@ function openGlobalFolder(){
   const folderUri = vscode.Uri.file(globalPathFolder);
   vscode.env.openExternal(folderUri);
 }
+
 
 /**
  * This method is called when the extension is activated.

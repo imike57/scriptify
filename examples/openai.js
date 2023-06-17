@@ -2,7 +2,7 @@ const OPENAI_API_KEY = 'YOUR_API_KEY';
 
 function transform(question) {
 
-    _log("Question:", question);
+    scriptify.log("Question:", question);
 
     return new Promise(async (resolve, reject) => {
 
@@ -22,7 +22,7 @@ function transform(question) {
                 }
             });
 
-            _log(JSON.stringify(response.data));
+            scriptify.log(JSON.stringify(response.data));
 
             if (response.data?.choices[0]) {
                 resolve(response.data.choices[0]?.text);
@@ -30,7 +30,7 @@ function transform(question) {
 
 
         } catch (error) {
-            _log('Error:', error);
+            scriptify.log('Error:', error);
             reject(error);
         }
 

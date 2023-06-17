@@ -15,10 +15,10 @@ function saveSelection(value) {
   // Save the value of the selection in a file
   fs.writeFile(saveFilePath, value, (err) => {
     if (err) {
-      _log('Failed to save selection:', err);
+      scriptify.log('Failed to save selection:', err);
       vscode.window.showErrorMessage('Failed to save selection.');
     } else {
-      _log('Selection saved successfully:', saveFilePath);
+      scriptify.log('Selection saved successfully:', saveFilePath);
       vscode.window.showInformationMessage(`Selection saved successfully: ${saveFilePath}`);
     }
   });
