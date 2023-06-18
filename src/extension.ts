@@ -3,51 +3,19 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as lvp from "live-plugin-manager";
 import axios from "axios";
-import { checkDirectoryExists, getGlobalFolder, getScriptFiles, getVersion, getWorkspaceFolder, writeScriptFile } from './utils';
+import { checkDirectoryExists, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, getWorkspaceFolder, writeScriptFile } from './utils';
 import { GithubFile, ScriptFile } from './types';
+import { Scriptify } from './Scriptify';
 
-class Scriptify {
 
-  /** Current extension version */
-  version = getVersion();
+
+function test(){
   
-  pkgPath = path.join(getGlobalFolder(), '.scriptify', 'packages');
-
-  /**
-   * Represents the `Scriptify` output channel.
-   */
-  outputChannel = vscode.window.createOutputChannel('Scriptify', 'javascript');
-
-  /** 
-   * live package manager instance 
-   */
-  pkg = new lvp.PluginManager({ pluginsPath: this.pkgPath });
-
-  /** 
-   * Axios library for making HTTP requests.
-   */
-  axios = axios;
-
-  /** 
-   * VS Code API for interacting with Visual Studio Code.
-   */
-  vscode = vscode;
-
-  /** 
-   * Use outputChannel to log messages.
-   * @param {...any} data - The data to be logged.
-   */
-  log(...data:any[])  {
-    this.outputChannel.show(true);
-    data.forEach(el => {
-      this.outputChannel.append(el);
-      this.outputChannel.append("\r");
-    });
-  }
 }
 
+
+/** Provide some features in script */
 const scriptify = new Scriptify();
 
 
@@ -199,7 +167,7 @@ function applyScript() {
               });
             }).catch(err => {
               console.error(err);
-              scriptify.log(err);
+              scriptify.log("Error", err);
             });
 
 
@@ -242,7 +210,7 @@ function applyScript() {
           execute();
         }
       } catch (error: any) {
-        scriptify.log(error);
+        scriptify.log("Error", error);
       }
     }
   });
@@ -256,12 +224,12 @@ function applyScript() {
  * 
  * @returns {void}
  */
-function switchScriptSource(){
+function switchScriptSource() {
 
   const sources = ["https://api.github.com/repos/imike57/scriptify/branches", "https://api.github.com/repos/imike57/scriptify/tags"];
 
   Promise.all(sources.map(url => {
-    return axios<{name:string}[]>({
+    return axios<{ name: string }[]>({
       method: "get",
       url: url,
       responseType: "json"
@@ -287,12 +255,12 @@ function switchScriptSource(){
 }
 
 /** Open the configuration panel */
-function openConfiguration(){
+function openConfiguration() {
   vscode.commands.executeCommand("workbench.action.openSettings", "scriptify");
 }
 
 /** Open the global folder */
-function openGlobalFolder(){
+function openGlobalFolder() {
   const globalPathFolder = path.join(getGlobalFolder(), ".scriptify");
   const folderUri = vscode.Uri.file(globalPathFolder);
   vscode.env.openExternal(folderUri);
@@ -311,7 +279,8 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
     vscode.commands.registerCommand('scriptify.switchScriptSource', switchScriptSource),
     vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
-    vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder)
+    vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder),
+    vscode.commands.registerCommand('scriptify.test', test)
   );
 }
 
