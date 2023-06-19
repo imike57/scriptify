@@ -82,7 +82,9 @@ export function sanitizeFileName(fileName: string, replacementChar: string = '-'
  * @param parentPath The parent path where the script files are located.
  * @returns An array of script files.
  */
-export function getScriptFiles(parentPath: string): ScriptFile[] {
+export function getScriptFiles(location: "local" | "global"): ScriptFile[] {
+
+    const parentPath = location === "global" ? getGlobalFolder() : getWorkspaceFolder(true);
     const scriptFolder = path.join(parentPath || '', '.scriptify');
     if (!fs.existsSync(scriptFolder)) {
         return [];
@@ -93,6 +95,7 @@ export function getScriptFiles(parentPath: string): ScriptFile[] {
         .map(f => ({
             name: f.replace(/\.js$/g, ""),
             uri: path.join(scriptFolder, f),
+            location : location
         }));
 }
 

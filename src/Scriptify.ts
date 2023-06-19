@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
-import * as lvp from "live-plugin-manager";
 import axios from "axios";
-import { getGlobalFolder, getVersion, getWorkspaceFolder } from './utils';
+import { getVersion, getWorkspaceFolder } from './utils';
 
 export class Scriptify {
 
@@ -11,17 +9,11 @@ export class Scriptify {
   /** Current extension version */
   version = getVersion();
 
-  pkgPath = path.join(getGlobalFolder(), '.scriptify', 'packages');
 
   /**
    * Represents the `Scriptify` output channel.
    */
   outputChannel = vscode.window.createOutputChannel('Scriptify', 'javascript');
-
-  /**
-   * live package manager instance
-   */
-  pkg = new lvp.PluginManager({ pluginsPath: this.pkgPath });
 
   /**
    * Axios library for making HTTP requests.

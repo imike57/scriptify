@@ -4,22 +4,13 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from "axios";
-import { checkDirectoryExists, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, getWorkspaceFolder, writeScriptFile } from './utils';
+import { getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
 import { GithubFile, ScriptFile } from './types';
 import { Scriptify } from './Scriptify';
-
-
-
-function test(){
-  
-}
-
+import { NodeVM, VMScript } from "vm2";
 
 /** Provide some features in script */
 const scriptify = new Scriptify();
-
-
-
 
 /**
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
@@ -101,16 +92,48 @@ function createGlobalScriptFile() {
 }
 
 
+async function executeVM(scriptString:string, location: "global" | "local"){
 
+  const rootPath = await getScriptFolder(location === "global");
+
+  const vm = new NodeVM({
+    sandbox: {
+      scriptify: scriptify,
+      vscode: vscode
+    },
+    require: {
+      builtin: ['*'],
+      root: rootPath,
+      external: {
+        transitive: true,
+        modules: ['*']
+      },
+      resolve(moduleName, parentDirname) {
+        const scriptPath = path.join(rootPath, 'node_modules', moduleName);
+        return require.resolve(scriptPath);
+      }
+    }
+  });
+
+  // Call the script
+  const transform = new VMScript(scriptString);
+    
+  return vm.run(transform);
+  
+}
 
 /**
  * Applies a script to the selected text in the active editor.
  */
 function applyScript() {
+
   let files: Array<ScriptFile> = [];
   try {
-    files = getScriptFiles(getWorkspaceFolder(true) || "")
-      .concat(getScriptFiles(getGlobalFolder()));
+    let localesFiles = getScriptFiles("local");
+    let globalFiles = getScriptFiles("global");
+    files = [...localesFiles, ...globalFiles].sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
   } catch (err) {
     return vscode.window.showErrorMessage(`${err}`);
   }
@@ -119,30 +142,18 @@ function applyScript() {
     vscode.window.showErrorMessage('No scripts found.');
     return;
   }
-
-  vscode.window.showQuickPick(files.map(f => f.name), {
+  
+  vscode.window.showQuickPick(files.map(el => { return { label : el.name, description: el.location, uri: el.uri }; }), {
     placeHolder: 'Select a script to apply'
-  }).then(selectedScriptName => {
-    if (selectedScriptName) {
+  }).then(scriptChoice => {
+    if (scriptChoice) {
       try {
-        const file = files.find(f => f.name === selectedScriptName);
-        if (!file) {
-          vscode.window.showErrorMessage(`Script "${selectedScriptName}" not found.`);
-          return;
-        }
-        const scriptPath = file.uri;
-
+      
+        const scriptPath = scriptChoice.uri;
         var scriptString = fs.readFileSync(scriptPath, "utf-8");
-
-        // Find all the times _require() is called by the script
-        const scriptRequires = scriptString.match(/_require\(["'`].+["'`]\)/g)?.map(i => i.substring("_require('".length, i.length - "')".length));
-
-        // Create the _require alias
-        const _require = scriptify.pkg.require.bind(scriptify.pkg);
-
-        const execute = () => {
-          // Call the script
-          const transform = eval(scriptString);
+        executeVM(scriptString, scriptChoice.description).then(transformFn => {
+          
+          console.log(transformFn);;
           const editor = vscode.window.activeTextEditor;
 
           if (editor) {
@@ -150,7 +161,7 @@ function applyScript() {
             const selections = editor.selections;
             const transformedTexts = selections.map(async selection => {
               const selectedText = document.getText(selection);
-              return await transform(selectedText);
+              return transformFn(selectedText);
             });
 
             Promise.all(transformedTexts).then(tTexts => {
@@ -172,43 +183,12 @@ function applyScript() {
 
 
           }
-        };
+        }).catch(err => {
 
-        if (scriptRequires) {
-          // Need to install packages
-          console.log(`Installing ${scriptRequires.length} packages: ${scriptRequires}`);
-          vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: `Installing ${scriptRequires.length} NPM packages...`,
-            cancellable: true
-          }, async (progress, token) => {
-            progress.report({ increment: 0 });
+          console.log(err);
+          scriptify.log(err);
+        });
 
-            for (const pkg of scriptRequires) {
-              if (token.isCancellationRequested) {
-                return;
-              }
-
-              const packageDirectoryExist = checkDirectoryExists(path.join(scriptify.pkgPath, pkg));
-
-              progress.report({
-                increment: scriptRequires.indexOf(pkg) / scriptRequires.length * 100,
-                message: `Installing ${pkg}...${packageDirectoryExist ? '(cached)' : '(npm)'}`
-              });
-
-              // Install from cache if exist.
-              if (packageDirectoryExist) {
-                await scriptify.pkg.installFromPath(path.join(scriptify.pkgPath, pkg));
-              } else {
-                await scriptify.pkg.install(pkg);
-              }
-            }
-            execute();
-          });
-        } else {
-          // No npm packages to install, execute now
-          execute();
-        }
       } catch (error: any) {
         scriptify.log("Error", error);
       }
@@ -279,8 +259,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
     vscode.commands.registerCommand('scriptify.switchScriptSource', switchScriptSource),
     vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
-    vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder),
-    vscode.commands.registerCommand('scriptify.test', test)
+    vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder)
   );
 }
 

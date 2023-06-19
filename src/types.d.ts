@@ -4,6 +4,7 @@
 export interface ScriptFile {
     name: string;
     uri: string;
+    location: "global" | "local"
 }
 
 /**
