@@ -1,0 +1,101 @@
+{
+  "name": "scriptify",
+  "displayName": "Scriptify",
+  "description": "Scriptify is a Visual Studio Code extension that allows you to create and apply JavaScript scripts to the current selection. With Scriptify, you can easily manipulate selected values using custom scripts.",
+  "publisher": "scriptify",
+  "icon": "./logo.png",
+  "version": "1.1.0",
+  "repository": "https://github.com/imike57/scriptify",
+  "engines": {
+    "vscode": "^1.79.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "scriptify.createScript",
+        "title": "[Scriptify]: Create New Script"
+      },
+      {
+        "command": "scriptify.createGlobalScript",
+        "title": "[Scriptify]: Create New Global Script"
+      },
+      {
+        "command": "scriptify.applyScript",
+        "title": "[Scriptify]: Apply Script"
+      },
+      {
+        "command": "scriptify.downloadScript",
+        "title": "[Scriptify]: Download Script from examples"
+      },
+      {
+        "command": "scriptify.switchScriptSource",
+        "title": "[Scriptify]: Switch download source for scripts (branch or tag)"
+      },
+      {
+        "command": "scriptify.openConfiguration",
+        "title": "[Scriptify]: Open the configuration panel"
+      },
+      {
+        "command": "scriptify.openGlobalFolder",
+        "title": "[Scriptify]: Open the global folder"
+      }
+    ],
+    "configuration": {
+      "title": "Scriptify",
+      "properties": {
+        "scriptify.globalFolderLocation": {
+          "type": "string",
+          "default": null,
+          "description": "Overrides the default global folder location. Defaults to your computer's temp directory. On Windows this is: C:\\Users\\<your user name>\\AppData\\Local\\Temp"
+        },
+        "scriptify.scriptDownloadLocation": {
+          "type": "string",
+          "default": null,
+          "description": "Define a download source for scripts, which can either be a tag or branch of the main repository. By default, the current extension version is used."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package_vsce": "vsce package"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "20.2.5",
+    "@types/vscode": "^1.79.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "@vscode/test-electron": "^2.3.2",
+    "eslint": "^8.41.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.1.3"
+  },
+  "keywords": [
+    "Scriptify",
+    "Apply",
+    "Create",
+    "JS",
+    "gpt",
+    "openai",
+    "lodash",
+    "dummyjson",
+    "transform"
+  ],
+  "dependencies": {
+    "axios": "^1.4.0",
+    "vm2": "^3.9.19"
+  }
+}

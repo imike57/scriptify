@@ -1,6 +1,6 @@
 {
-  "name": "scriptify-workspace",
-  "version": "1.0.0",
+  "name": "@scriptify/lodash",
+  "version": "0.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@changesets/cli": "^2.26.1"
+    "lodash": "^4.17.21"
   }
 }
