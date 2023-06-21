@@ -1,5 +1,5 @@
 {
-  "name": "@scriptify/lodash",
+  "name": "@scriptify-vscode/lodash",
   "version": "0.0.0",
   "description": "Lodash version for scriptify vscode extensions",
   "main": "index.js",
