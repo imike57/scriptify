@@ -1,13 +1,13 @@
 {
   "name": "@scriptify/lodash",
   "version": "0.0.0",
-  "description": "",
+  "description": "Lodash version for scriptify vscode extensions",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "scriptify",
   "license": "ISC",
   "dependencies": {
     "lodash": "^4.17.21"
