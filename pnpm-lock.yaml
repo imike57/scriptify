@@ -55,6 +55,12 @@ importers:
         specifier: ^5.1.3
         version: 5.1.3
 
+  packages/core:
+    devDependencies:
+      typescript:
+        specifier: ^5.1.3
+        version: 5.1.3
+
   packages/lodash:
     dependencies:
       lodash:

@@ -97,5 +97,6 @@
   "dependencies": {
     "axios": "^1.4.0",
     "vm2": "^3.9.19"
-  }
+  },
+  "types": "./out/types/extension.d.ts"
 }

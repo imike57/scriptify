@@ -7,10 +7,10 @@ import axios from "axios";
 import { getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
 import { GithubFile, ScriptFile } from './types';
 import { Scriptify } from './Scriptify';
-import { NodeVM, VMScript } from "vm2";
+import { NodeVM, VMScript, VM } from "vm2";
 
 /** Provide some features in script */
-const scriptify = new Scriptify();
+export const scriptify = new Scriptify();
 
 /**
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.

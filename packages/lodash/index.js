@@ -1,14 +1,14 @@
-const _ = require('lodash');
-const vscode = require('vscode');
+import _ from 'lodash';
+import { window } from 'vscode';
 function transform(value) {
 
     return new Promise((resolve, reject) => {
 
         const lodashFns = Object.entries(_).filter(el => typeof el[1] === "function");
         const keys = lodashFns.map(el => el[0]);
-        vscode.window.showQuickPick(keys).then(async val => {
-
-            scriptify.log(`${val}`);
+        window.showQuickPick(keys).then(async val => {
+            
+            console.log(`${val}`);
 
             const getFnParams = (fn) => {
                 return fn.toString()
@@ -22,7 +22,7 @@ function transform(value) {
             const userParams = [];
 
             for (const [index, param] of fnParams.entries()) {
-                await vscode.window.showInputBox({
+                await window.showInputBox({
                     prompt: `Please enter a value for the param "${param}"`,
                     value: index === 0 ? value : ""
                 }).then(val => {
@@ -30,10 +30,10 @@ function transform(value) {
                 });
             }
 
-            scriptify.log("Your params: ", userParams);
+            console.log("Your params: ", userParams);
 
             const result = fn(...userParams);
-            scriptify.log("Result: ", result);
+            console.log("Result: ", result);
 
             if (typeof result === "object") {
                 resolve(JSON.stringify(fn.apply(null, userParams)));
@@ -85,4 +85,4 @@ function parseData(data) {
 
 
 
-module.exports = transform;
+export default transform;
