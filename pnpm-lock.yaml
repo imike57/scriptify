@@ -66,6 +66,10 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+    devDependencies:
+      '@types/lodash':
+        specifier: ^4.14.195
+        version: 4.14.195
 
 packages:
 
@@ -396,6 +400,10 @@ packages:
 
   /@types/json-schema@7.0.12:
     resolution: {integrity: sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==}
+    dev: true
+
+  /@types/lodash@4.14.195:
+    resolution: {integrity: sha512-Hwx9EUgdwf2GLarOjQp5ZH8ZmblzcbTBC2wtQWNKARBSxM9ezRIAUpeDTgoQRAFB0+8CNWXVA9+MaSOzOF3nPg==}
     dev: true
 
   /@types/minimatch@5.1.2:
