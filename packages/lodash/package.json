@@ -1,6 +1,6 @@
 {
   "name": "@scriptify-vscode/lodash",
-  "version": "0.0.1-0",
+  "version": "0.0.2-0",
   "description": "Lodash version for scriptify vscode extensions",
   "repository": {
     "url": "https://github.com/imike57/scriptify"
