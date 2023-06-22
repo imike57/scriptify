@@ -4,7 +4,8 @@
 export interface ScriptFile {
     name: string;
     uri: string;
-    location: "global" | "local"
+    location: "global" | "local",
+    description?: string
 }
 
 /**
@@ -31,3 +32,29 @@ export interface GithubLinks {
     git: string;
     html: string;
 }
+
+
+
+export interface PackageJSON {
+    name: string;
+    displayName?: string;
+    description?: string;
+    publisher?: string;
+    version: string;
+    repository?: string;
+    categories?: string[];
+    main: string;
+    devDependencies?: Dependencies;
+    keywords?: string[];
+    dependencies?: Dependencies;
+    scriptify?: {
+        name?: string,
+        description?: string
+    }
+}
+
+
+export interface Dependencies {
+    [key: string]: string
+}
+

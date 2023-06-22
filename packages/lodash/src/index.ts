@@ -96,4 +96,4 @@ function parseData(data: string): any {
   }
 }
 
-export default transform;
+module.exports = transform;

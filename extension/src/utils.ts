@@ -2,7 +2,7 @@ import * as path from "path";
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as os from 'os';
-import { ScriptFile } from "./types";
+import { PackageJSON, ScriptFile } from "./types";
 
 /** Return the current version of the extension. */
 export function getVersion() {
@@ -77,6 +77,14 @@ export function sanitizeFileName(fileName: string, replacementChar: string = '-'
     return fileName.replace(invalidCharsRegex, replacementChar);
 }
 
+
+interface ClientConfig {
+    modules: { [key:string]: {
+        enabled: boolean,
+        path?:string
+    }}
+}
+
 /**
  * Retrieves the script files located in the specified parent path.
  * @param parentPath The parent path where the script files are located.
@@ -85,18 +93,40 @@ export function sanitizeFileName(fileName: string, replacementChar: string = '-'
 export function getScriptFiles(location: "local" | "global"): ScriptFile[] {
 
     const parentPath = location === "global" ? getGlobalFolder() : getWorkspaceFolder(true);
-    const scriptFolder = path.join(parentPath || '', '.scriptify');
-    if (!fs.existsSync(scriptFolder)) {
+    const scriptFolderPath = path.join(parentPath || '', '.scriptify');
+    const configPath = path.join(scriptFolderPath, "scriptify.json");
+    if (!fs.existsSync(scriptFolderPath) || !fs.existsSync(configPath)) {
         return [];
     }
 
-    return fs.readdirSync(scriptFolder)
-        .filter(f => f.endsWith('.js'))
-        .map(f => ({
-            name: f.replace(/\.js$/g, ""),
-            uri: path.join(scriptFolder, f),
-            location : location
-        }));
+    const getModulePackageJSON = (moduleName:string): PackageJSON => {
+        const modulePath = path.join(scriptFolderPath, "node_modules", moduleName);
+        const pkgJSONPath = path.join(modulePath, "package.json");
+
+        return JSON.parse(fs.readFileSync(pkgJSONPath, "utf-8"));
+
+    };
+
+
+    // Get config
+    const config:ClientConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+
+    return Object.entries(config.modules).filter(entry => {
+        return entry[1].enabled;
+    }).map(entry => {
+
+        const moduleName = entry[0];
+        const moduleConfig = entry[1];
+        const moduleDefaultPath = path.join(scriptFolderPath, "node_modules", moduleName);
+        const modulePkgJson = getModulePackageJSON(moduleName);
+
+        return {
+            location: location,
+            name: modulePkgJson.scriptify?.name || modulePkgJson.displayName || moduleName,
+            description: modulePkgJson.scriptify?.description || modulePkgJson.description,
+            uri: moduleConfig.path || path.join(moduleDefaultPath, modulePkgJson.main)
+        };
+    });
 }
 
 /**

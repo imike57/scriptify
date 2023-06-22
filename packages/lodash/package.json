@@ -1,5 +1,6 @@
 {
   "name": "@scriptify-vscode/lodash",
+  "displayName": "Lodash",
   "version": "0.0.5-0",
   "description": "Lodash version for scriptify vscode extensions",
   "repository": {
@@ -18,5 +19,9 @@
   "devDependencies": {
     "@types/lodash": "^4.14.195"
   },
-  "types": "./types/index.d.ts"
+  "types": "./types/index.d.ts",
+  "scriptify": {
+    "name": "Lodash",
+    "description": "A modern JavaScript utility library delivering modularity, performance & extras."
+  }
 }

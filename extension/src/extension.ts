@@ -98,12 +98,10 @@ async function executeVM(scriptString:string, location: "global" | "local"){
 
   const vm = new NodeVM({
     sandbox: {
-      scriptify: scriptify,
-      vscode: vscode
+      scriptify: scriptify
     },
     require: {
       builtin: ['*'],
-      root: rootPath,
       external: {
         transitive: true,
         modules: ['*']
@@ -111,12 +109,18 @@ async function executeVM(scriptString:string, location: "global" | "local"){
       resolve(moduleName, parentDirname) {
         const scriptPath = path.join(rootPath, 'node_modules', moduleName);
         return require.resolve(scriptPath);
-      }
+      },
+      mock: {
+        vscode: vscode,
+        scriptify: scriptify
+      },
+      context: "sandbox"
     }
   });
 
   // Call the script
-  const transform = new VMScript(scriptString);
+  const transform = new VMScript(scriptString, { filename: "./vm.js"});
+
     
   return vm.run(transform);
   
@@ -143,7 +147,7 @@ function applyScript() {
     return;
   }
   
-  vscode.window.showQuickPick(files.map(el => { return { label : el.name, description: el.location, uri: el.uri }; }), {
+  vscode.window.showQuickPick(files.map(el => { return { label : el.name, description: el.location, uri: el.uri, detail: el.description }; }), {
     placeHolder: 'Select a script to apply'
   }).then(scriptChoice => {
     if (scriptChoice) {
