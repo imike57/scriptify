@@ -2,10 +2,19 @@
  * Represents a script file.
  */
 export interface ScriptFile {
+
+    /** Unique identifier */
+    id: string;
+    /** Displayed name */
     name: string;
+    /** Full path to the script to execute. */
     uri: string;
+    /** Where the module is located. */
     location: "global" | "local",
-    description?: string
+    /** Some description added to the selection list. */
+    description?: string,
+    /** Path to the module root. */
+    modulePath:string
 }
 
 /**
@@ -36,6 +45,7 @@ export interface GithubLinks {
 
 
 export interface PackageJSON {
+    [key: string]: any;
     name: string;
     displayName?: string;
     description?: string;
@@ -48,11 +58,10 @@ export interface PackageJSON {
     keywords?: string[];
     dependencies?: Dependencies;
     scriptify?: {
-        name?: string,
-        description?: string
-    }
+        name?: string;
+        description?: string;
+    };
 }
-
 
 export interface Dependencies {
     [key: string]: string

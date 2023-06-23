@@ -90,7 +90,7 @@ interface ClientConfig {
  * @param parentPath The parent path where the script files are located.
  * @returns An array of script files.
  */
-export function getScriptFiles(location: "local" | "global"): ScriptFile[] {
+export async function getScriptFiles(location: "local" | "global"): Promise<ScriptFile[]> {
 
     const parentPath = location === "global" ? getGlobalFolder() : getWorkspaceFolder(true);
     const scriptFolderPath = path.join(parentPath || '', '.scriptify');
@@ -99,8 +99,7 @@ export function getScriptFiles(location: "local" | "global"): ScriptFile[] {
         return [];
     }
 
-    const getModulePackageJSON = (moduleName:string): PackageJSON => {
-        const modulePath = path.join(scriptFolderPath, "node_modules", moduleName);
+    const getModulePackageJSON = (modulePath:string): PackageJSON => {
         const pkgJSONPath = path.join(modulePath, "package.json");
 
         return JSON.parse(fs.readFileSync(pkgJSONPath, "utf-8"));
@@ -109,22 +108,27 @@ export function getScriptFiles(location: "local" | "global"): ScriptFile[] {
 
 
     // Get config
-    const config:ClientConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    const clientConfig = await getClientConfig(location === "global");
 
-    return Object.entries(config.modules).filter(entry => {
+    return Object.entries(clientConfig.modules).filter(entry => {
         return entry[1].enabled;
     }).map(entry => {
 
         const moduleName = entry[0];
         const moduleConfig = entry[1];
         const moduleDefaultPath = path.join(scriptFolderPath, "node_modules", moduleName);
-        const modulePkgJson = getModulePackageJSON(moduleName);
+        const modulePath = moduleConfig.path ? path.join(scriptFolderPath, moduleConfig.path ) : moduleDefaultPath;
+        const modulePkgJson = getModulePackageJSON(modulePath);
+        console.log("URI", path.join(modulePath, modulePkgJson.main));
 
         return {
+            id: moduleName,
             location: location,
             name: modulePkgJson.scriptify?.name || modulePkgJson.displayName || moduleName,
             description: modulePkgJson.scriptify?.description || modulePkgJson.description,
-            uri: moduleConfig.path || path.join(moduleDefaultPath, modulePkgJson.main)
+            uri: path.join(modulePath, modulePkgJson.main),
+            modulePath: modulePath
+            
         };
     });
 }
@@ -162,17 +166,29 @@ export function getScriptFolder(global: boolean) {
  * @param overwrite - Optional parameter indicating whether to overwrite an existing file.
  * @returns A promise that resolves to the script path.
  */
-export function writeScriptFile(scriptName: string, scriptContent: string, global: boolean, overwrite: boolean = false) {
+export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: string, global: boolean, overwrite: boolean = false) {
+    const clientConfig = await getClientConfig(global);
+    const scriptName = packageJSON.name;
+    const defaultModuleFolder = "./my-modules";
+
+    clientConfig.modules[packageJSON.name] = {
+        enabled: true,
+        path: `./my-modules/${packageJSON.name}`
+    };
     return new Promise<{ scriptPath: string }>(async (resolve, reject) => {
-        const scriptFolder = await getScriptFolder(global);
+        const scriptFolder = path.join(await getScriptFolder(global), defaultModuleFolder, scriptName);
 
         if (!fs.existsSync(scriptFolder)) {
-            fs.mkdirSync(scriptFolder);
+            fs.mkdirSync(scriptFolder, { recursive: true });
         }
 
-        const scriptPath = path.join(scriptFolder, `${sanitizeFileName(scriptName)}.js`);
+        const scriptPath = path.join(scriptFolder, `index.js`);
 
         if (overwrite || !checkFileExists(scriptPath)) {
+
+            fs.writeFileSync(path.join(scriptFolder, "package.json"), JSON.stringify(packageJSON, null, 4), "utf-8");
+            await updateClientConfig(global, clientConfig);
+
             fs.writeFile(scriptPath, scriptContent, (err) => {
                 if (err) {
                     reject(err);
@@ -189,11 +205,48 @@ export function writeScriptFile(scriptName: string, scriptContent: string, globa
         } else {
             vscode.window.showWarningMessage("File already exists. Do you want to overwrite it?", "Yes", "No").then(val => {
                 if (val === "Yes") {
-                    return writeScriptFile(scriptName, scriptContent, global, true);
+                    return writeScriptFile(packageJSON, scriptContent, global, true);
                 } else {
                     reject({ fileExist: true, rejected: true });
                 }
             });
         }
     });
+}
+
+
+export async function getClientConfig(global:boolean):Promise<ClientConfig> {
+
+    const workspace = await getScriptFolder(global);
+    const clientConfigPath = path.join(workspace, "scriptify.json");
+
+    if (checkFileExists(clientConfigPath)) {
+        return JSON.parse(fs.readFileSync(clientConfigPath, "utf-8"));
+
+    } else {
+        await createClientConfig(global);
+        return getClientConfig(global);
+    }
+
+
+}
+
+export async function createClientConfig(global:boolean) {
+
+    const workspace = await getScriptFolder(global);
+
+    const tpl = `{
+        "modules": {
+            
+        }
+    }`;
+
+    fs.writeFileSync(path.join(workspace, "scriptify.json"), tpl, "utf-8");
+}
+
+export async function updateClientConfig(global:boolean, config:ClientConfig) {
+    const workspace = await getScriptFolder(global);
+
+    fs.writeFileSync(path.join(workspace, "scriptify.json"), JSON.stringify(config, null, 4), "utf-8");
+
 }

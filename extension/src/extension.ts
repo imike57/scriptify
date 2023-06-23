@@ -4,8 +4,8 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from "axios";
-import { getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
-import { GithubFile, ScriptFile } from './types';
+import { getClientConfig, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
+import { GithubFile, PackageJSON, ScriptFile } from './types';
 import { Scriptify } from './Scriptify';
 import { NodeVM, VMScript, VM } from "vm2";
 
@@ -26,7 +26,7 @@ function downloadScript() {
   }).then(results => {
     const list = results.data.map(entry => {
       return entry.name;
-    })
+    });
     vscode.window.showQuickPick(list, { title: `Select a script (${source})`}).then(fileName => {
 
       if (fileName) {
@@ -43,7 +43,9 @@ function downloadScript() {
 
             vscode.window.showQuickPick(["Install globally", "Install locally"]).then(choice => {
               if (choice) {
-                writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
+                // TODO
+                scriptify.log('Method not implemented');
+                // writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
               }
 
             });
@@ -61,23 +63,55 @@ function downloadScript() {
  * Creates a script file in the current workspace or globally.
  * @param createGlobally Specifies whether to create the script globally.
  */
-function createScriptFile(createGlobally = false) {
+async function createScriptFile(createGlobally = false) {
+
+  // Check or create config file
+  const clientConfig = await getClientConfig(createGlobally);
+
+  console.log(clientConfig);
 
   vscode.window.showInputBox({
-    prompt: "Enter script name"
+    prompt: "Enter script name",
+    validateInput: (value) => {
+      const rgx = /^(?:@(?:[a-z0-9-*~][a-z0-9-*._~]*)?\/)?[a-z0-9-~][a-z0-9-._~]*$/;
+
+      if (!(value && rgx.test(value))) {
+        return "Please enter a valid package name";
+      }
+    }
   }).then(scriptName => {
     if (scriptName) {
+      const packageJSONFile:PackageJSON = {
+        "name": `@scriptify-vscode/${scriptName}`,
+        "displayName": `${scriptName}`,
+        "version": "0.0.0",
+        "description": "",
+        "main": "index.js",
+        "scripts": {
+          "test": "echo \"Error: no test specified\" && exit 1"
+        },
+        "keywords": [],
+        "author": "scriptify",
+        "license": "ISC",
+        "dependencies": {},
+        "devDependencies": {},
+        "scriptify": {
+          "name": "",
+          "description": ""
+        }
+      };
+      
 
       const scriptContent = `
 function transform(value) {
   // TODO: Implement your transformation logic here
-  return value;
+  return \`Hello \${value}\`;
 }
 
 module.exports = transform;
 `;
 
-      writeScriptFile(scriptName, scriptContent, createGlobally);
+      writeScriptFile(packageJSONFile, scriptContent, createGlobally);
 
     }
   });
@@ -92,9 +126,11 @@ function createGlobalScriptFile() {
 }
 
 
-async function executeVM(scriptString:string, location: "global" | "local"){
+async function executeVM(scriptString:string, scriptFile:ScriptFile ){
 
-  const rootPath = await getScriptFolder(location === "global");
+  const rootPath = await getScriptFolder(scriptFile.location === "global");
+
+  console.log("scriptFile", scriptFile);
 
   const vm = new NodeVM({
     sandbox: {
@@ -106,20 +142,18 @@ async function executeVM(scriptString:string, location: "global" | "local"){
         transitive: true,
         modules: ['*']
       },
-      resolve(moduleName, parentDirname) {
-        const scriptPath = path.join(rootPath, 'node_modules', moduleName);
-        return require.resolve(scriptPath);
-      },
       mock: {
         vscode: vscode,
         scriptify: scriptify
-      },
-      context: "sandbox"
+      }
     }
   });
 
   // Call the script
-  const transform = new VMScript(scriptString, { filename: "./vm.js"});
+  const transform = new VMScript(scriptString, scriptFile.modulePath );
+
+
+  console.log("transform", transform);
 
     
   return vm.run(transform);
@@ -129,12 +163,12 @@ async function executeVM(scriptString:string, location: "global" | "local"){
 /**
  * Applies a script to the selected text in the active editor.
  */
-function applyScript() {
+async function applyScript() {
 
   let files: Array<ScriptFile> = [];
   try {
-    let localesFiles = getScriptFiles("local");
-    let globalFiles = getScriptFiles("global");
+    let localesFiles = await getScriptFiles("local");
+    let globalFiles = await getScriptFiles("global");
     files = [...localesFiles, ...globalFiles].sort((a, b) => {
       return a.name.localeCompare(b.name);
     });
@@ -147,15 +181,22 @@ function applyScript() {
     return;
   }
   
-  vscode.window.showQuickPick(files.map(el => { return { label : el.name, description: el.location, uri: el.uri, detail: el.description }; }), {
+  vscode.window.showQuickPick(files.map(scriptFile => { 
+    return { 
+      label : scriptFile.name, 
+      description: scriptFile.location, 
+      detail: scriptFile.description,
+      data: scriptFile
+    }; 
+  }), {
     placeHolder: 'Select a script to apply'
-  }).then(scriptChoice => {
+  }).then(async scriptChoice => {
     if (scriptChoice) {
       try {
-      
-        const scriptPath = scriptChoice.uri;
+        const scriptPath = scriptChoice.data.uri;
+        console.log("scriptPath", scriptPath);
         var scriptString = fs.readFileSync(scriptPath, "utf-8");
-        executeVM(scriptString, scriptChoice.description).then(transformFn => {
+        executeVM(scriptString, scriptChoice.data).then(transformFn => {
           
           console.log(transformFn);;
           const editor = vscode.window.activeTextEditor;
@@ -163,9 +204,9 @@ function applyScript() {
           if (editor) {
             const document = editor.document;
             const selections = editor.selections;
-            const transformedTexts = selections.map(async selection => {
+            const transformedTexts = selections.map(async (selection, index) => {
               const selectedText = document.getText(selection);
-              return transformFn(selectedText);
+              return transformFn(selectedText, index);
             });
 
             Promise.all(transformedTexts).then(tTexts => {

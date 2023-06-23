@@ -57,6 +57,11 @@
           "type": "string",
           "default": null,
           "description": "Define a download source for scripts, which can either be a tag or branch of the main repository. By default, the current extension version is used."
+        },
+        "scriptify.modulesPaths2": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "fine a download source for scripts, which"
         }
       }
     }
