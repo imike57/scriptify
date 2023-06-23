@@ -150,7 +150,7 @@ async function executeVM(scriptString:string, scriptFile:ScriptFile ){
   });
 
   // Call the script
-  const transform = new VMScript(scriptString, scriptFile.modulePath );
+  const transform = new VMScript(scriptString, scriptFile.uri );
 
 
   console.log("transform", transform);
