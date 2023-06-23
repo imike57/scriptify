@@ -4,10 +4,11 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from "axios";
-import { getClientConfig, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
+import { getClientConfig, getFavoritePackageManager, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
 import { GithubFile, PackageJSON, ScriptFile } from './types';
 import { Scriptify } from './Scriptify';
 import { NodeVM, VMScript, VM } from "vm2";
+import { NpmResponse } from './NpmResponse';
 
 /** Provide some features in script */
 export const scriptify = new Scriptify();
@@ -15,42 +16,69 @@ export const scriptify = new Scriptify();
 /**
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
  */
-function downloadScript() {
-  const source = vscode.workspace.getConfiguration('scriptify').get<string>("scriptDownloadLocation") || getVersion();
-  const githubExampleFolderAPI = `https://api.github.com/repos/imike57/scriptify/contents/examples?ref=${source}`;
+function downloadScript(keyword?:string) {
+  const compatibleVersion = vscode.workspace.getConfiguration('scriptify').get<string>("scriptDownloadLocation") || getVersion();
 
-  axios<GithubFile[]>({
+  const npmScopedAPI = `https://registry.npmjs.org/-/v1/search?text=scope:scriptify-vscode${keyword ? `+${keyword}` : ''}&size=250`;
+
+  
+  axios<NpmResponse>({
     method: "get",
-    url: githubExampleFolderAPI,
+    url: npmScopedAPI,
     responseType: "json"
   }).then(results => {
-    const list = results.data.map(entry => {
-      return entry.name;
+
+    const base = [
+      {
+        label: "Search"
+      },
+      {
+        label: "",
+        kind: vscode.QuickPickItemKind.Separator
+      }
+    ];
+
+    const list = results.data.objects.map(entry => {
+      return {
+        label: entry.package.name,
+        description: entry.package.description,
+        data: entry
+      };
     });
-    vscode.window.showQuickPick(list, { title: `Select a script (${source})`}).then(fileName => {
 
-      if (fileName) {
-        const selectedFile = results.data.find(file => file.name === fileName);
-        const scriptName = path.parse(fileName).name;
 
-        if (selectedFile) {
-          axios({
-            method: "get",
-            url: selectedFile.download_url,
-            responseType: "text"
-          }).then(fileContent => {
-            vscode.window.showInformationMessage(fileContent.data);
+    vscode.window.showQuickPick([...base,...list], { 
+      title: `Select a script (${compatibleVersion})`
+    }).then(async scriptChoice => {
 
-            vscode.window.showQuickPick(["Install globally", "Install locally"]).then(choice => {
-              if (choice) {
-                // TODO
-                scriptify.log('Method not implemented');
-                // writeScriptFile(scriptName, fileContent.data, choice === "Install globally");
-              }
+      if (scriptChoice) {
 
-            });
+        if (scriptChoice.label === "Search") {
 
+          vscode.window.showInputBox({
+            title: "Search a package"
+          }).then(keyword => {
+
+            return downloadScript(keyword);
           });
+      
+
+        } else {
+          const terminal = vscode.window.createTerminal("scriptify");
+
+          terminal.show();
+
+          terminal.sendText(`cd ${await getScriptFolder(false)}`);
+
+          const installCommands = {
+            npm: "npm i",
+            pnpm: "pnpm add",
+            yarn: "yarn add"
+          };
+
+          
+
+          terminal.sendText(`${installCommands[getFavoritePackageManager()]} ${scriptChoice.label}`);
 
         }
       }

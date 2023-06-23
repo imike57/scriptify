@@ -250,3 +250,7 @@ export async function updateClientConfig(global:boolean, config:ClientConfig) {
     fs.writeFileSync(path.join(workspace, "scriptify.json"), JSON.stringify(config, null, 4), "utf-8");
 
 }
+
+export function getFavoritePackageManager(){
+    return vscode.workspace.getConfiguration('scriptify').get<"npm" | "pnpm" | "yarn">('favoritePackageManager') || "npm";
+}
