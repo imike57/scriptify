@@ -268,44 +268,7 @@ async function applyScript() {
     }
   });
 }
-/**
- * This function `switchScriptSource` is responsible for switching the script source.
- * It retrieves a list of sources from the Github repo, and then displays the list to the user
- * as a quick pick menu. The user's choice is stored in the `choice` variable.
- * If the choice is valid (i.e., included in the list), it updates the `scriptDownloadLocation`
- * configuration setting for the 'scriptify' extension in the global scope.
- * 
- * @returns {void}
- */
-function switchScriptSource() {
 
-  const sources = ["https://api.github.com/repos/imike57/scriptify/branches", "https://api.github.com/repos/imike57/scriptify/tags"];
-
-  Promise.all(sources.map(url => {
-    return axios<{ name: string }[]>({
-      method: "get",
-      url: url,
-      responseType: "json"
-    });
-  })).then(results => {
-
-    const list = [...results[0].data, ...results[1].data].map(el => el.name).concat(['default']);
-
-
-    vscode.window.showQuickPick(list).then(choice => {
-
-      if (choice && list.includes(choice)) {
-        if (choice === "default") {
-          choice = undefined;
-        }
-        vscode.workspace.getConfiguration('scriptify').update('scriptDownloadLocation', choice, vscode.ConfigurationTarget.Global).then(res => {
-          vscode.window.showInformationMessage('Source updated');
-        });
-      }
-
-    });
-  });
-}
 
 /** Open the configuration panel */
 function openConfiguration() {
@@ -330,7 +293,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.createGlobalScript', createGlobalScriptFile),
     vscode.commands.registerCommand('scriptify.applyScript', applyScript),
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
-    vscode.commands.registerCommand('scriptify.switchScriptSource', switchScriptSource),
     vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
     vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder)
   );
