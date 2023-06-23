@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from "axios";
-import { getClientConfig, getFavoritePackageManager, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
+import { addPackageToClientConfig, getClientConfig, getFavoritePackageManager, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
 import { GithubFile, PackageJSON, ScriptFile } from './types';
 import { Scriptify } from './Scriptify';
 import { NodeVM, VMScript, VM } from "vm2";
@@ -17,7 +17,8 @@ export const scriptify = new Scriptify();
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
  */
 function downloadScript(keyword?:string) {
-  const compatibleVersion = vscode.workspace.getConfiguration('scriptify').get<string>("scriptDownloadLocation") || getVersion();
+  // TODO, filter package for current version only.
+  const compatibleVersion = getVersion();
 
   const npmScopedAPI = `https://registry.npmjs.org/-/v1/search?text=scope:scriptify-vscode${keyword ? `+${keyword}` : ''}&size=250`;
 
@@ -64,21 +65,45 @@ function downloadScript(keyword?:string) {
       
 
         } else {
-          const terminal = vscode.window.createTerminal("scriptify");
 
-          terminal.show();
+          const locations = [
+            {
+              label: "global"
+            },
+            {
+              label: "local"
+            }
+          ];
 
-          terminal.sendText(`cd ${await getScriptFolder(false)}`);
+          vscode.window.showQuickPick(locations, {
+            title: "Where to install ?"
+          }).then(async locationChoice => {
 
-          const installCommands = {
-            npm: "npm i",
-            pnpm: "pnpm add",
-            yarn: "yarn add"
-          };
+            if (!locationChoice) {
+              return;
+            }
 
-          
+            const global = locationChoice.label === "global";
 
-          terminal.sendText(`${installCommands[getFavoritePackageManager()]} ${scriptChoice.label}`);
+            const terminal = vscode.window.createTerminal("scriptify");
+
+            terminal.show();
+  
+            terminal.sendText(`cd ${await getScriptFolder(global)}`);
+  
+            const installCommands = {
+              npm: "npm i",
+              pnpm: "pnpm add",
+              yarn: "yarn add"
+            };
+  
+            terminal.sendText(`${installCommands[getFavoritePackageManager()]} ${scriptChoice.label}`);
+  
+            addPackageToClientConfig(global, scriptChoice.label, { enabled: true });
+
+          });
+
+        
 
         }
       }

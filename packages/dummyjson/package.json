@@ -1,0 +1,19 @@
+{
+    "name": "@scriptify-vscode/dummyjson",
+    "displayName": "DummyJSON",
+    "version": "0.0.0",
+    "description": "DummyJSON API for scriptify. Get dummy/fake JSON data to use as placeholder in development or in prototype testing.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "scriptify",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {},
+    "scriptify": {
+        "name": "DummyJSON",
+        "description": "Get dummy/fake JSON data to use as placeholder in development or in prototype testing."
+    }
+}

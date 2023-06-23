@@ -251,6 +251,12 @@ export async function updateClientConfig(global:boolean, config:ClientConfig) {
 
 }
 
+export async function addPackageToClientConfig(global:boolean, packageName:string, packageConfig: ClientConfig['modules'][string]) {
+    const currentConfig = await getClientConfig(global);
+    currentConfig.modules[packageName] = packageConfig;
+    return updateClientConfig(global, currentConfig);
+}
+
 export function getFavoritePackageManager(){
     return vscode.workspace.getConfiguration('scriptify').get<"npm" | "pnpm" | "yarn">('favoritePackageManager') || "npm";
 }
