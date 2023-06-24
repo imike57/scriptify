@@ -2,7 +2,9 @@ import * as path from "path";
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as os from 'os';
-import { ClientConfig, PackageJSON, ScriptFile } from "./types";
+import { PackageJSON, ScriptFile } from "./types";
+import { ClientConfig } from "./ClientConfig";
+
 
 /** Return the current version of the extension. */
 export function getVersion() {
@@ -67,19 +69,6 @@ export function getWorkspaceFolder(ignoreErrors = false): string | null {
 
 
 /**
- * Sanitizes a file name by replacing invalid characters with a specified replacement character.
- * @param fileName The file name to sanitize.
- * @param replacementChar The character to use as a replacement for invalid characters.
- * @returns The sanitized file name.
- */
-export function sanitizeFileName(fileName: string, replacementChar: string = '-'): string {
-    const invalidCharsRegex = /[\W]/g;
-    return fileName.replace(invalidCharsRegex, replacementChar);
-}
-
-
-
-/**
  * Retrieves the script files located in the specified parent path.
  * @param parentPath The parent path where the script files are located.
  * @returns An array of script files.
@@ -102,7 +91,7 @@ export async function getScriptFiles(location: "local" | "global"): Promise<Scri
 
 
     // Get config
-    const clientConfig = await getClientConfig(location === "global");
+    const clientConfig = await new ClientConfig(location === "global").load();
 
     return Object.entries(clientConfig.modules).filter(entry => {
         return entry[1].enabled;
@@ -160,14 +149,13 @@ export function getScriptFolder(global: boolean) {
  * @returns A promise that resolves to the script path.
  */
 export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: string, global: boolean, overwrite: boolean = false) {
-    const clientConfig = await getClientConfig(global);
+    const clientConfig = await new ClientConfig(global).load();
     const scriptName = packageJSON.name;
     const defaultModuleFolder = "./my-modules";
 
-    clientConfig.modules[packageJSON.name] = {
-        enabled: true,
-        path: `./my-modules/${packageJSON.name}`
-    };
+   
+    clientConfig.addPackage(packageJSON.name, { enabled: true, path: `./my-modules/${packageJSON.name}` });
+
     return new Promise<{ scriptPath: string }>(async (resolve, reject) => {
         const scriptFolder = path.join(await getScriptFolder(global), defaultModuleFolder, scriptName);
 
@@ -179,9 +167,13 @@ export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: s
 
         if (overwrite || !checkFileExists(scriptPath)) {
 
+            // Write package.json
             fs.writeFileSync(path.join(scriptFolder, "package.json"), JSON.stringify(packageJSON, null, 4), "utf-8");
-            await updateClientConfig(global, clientConfig);
 
+            // Save client config
+            await clientConfig.save();
+
+            // Write main script file
             fs.writeFile(scriptPath, scriptContent, (err) => {
                 if (err) {
                     reject(err);
@@ -207,48 +199,6 @@ export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: s
     });
 }
 
-
-export async function getClientConfig(global:boolean):Promise<ClientConfig> {
-
-    const workspace = await getScriptFolder(global);
-    const clientConfigPath = path.join(workspace, "scriptify.json");
-
-    if (checkFileExists(clientConfigPath)) {
-        return JSON.parse(fs.readFileSync(clientConfigPath, "utf-8"));
-
-    } else {
-        await createClientConfig(global);
-        return getClientConfig(global);
-    }
-
-
-}
-
-export async function createClientConfig(global:boolean) {
-
-    const workspace = await getScriptFolder(global);
-
-    const tpl = `{
-        "modules": {
-            
-        }
-    }`;
-
-    fs.writeFileSync(path.join(workspace, "scriptify.json"), tpl, "utf-8");
-}
-
-export async function updateClientConfig(global:boolean, config:ClientConfig) {
-    const workspace = await getScriptFolder(global);
-
-    fs.writeFileSync(path.join(workspace, "scriptify.json"), JSON.stringify(config, null, 4), "utf-8");
-
-}
-
-export async function addPackageToClientConfig(global:boolean, packageName:string, packageConfig: ClientConfig['modules'][string]) {
-    const currentConfig = await getClientConfig(global);
-    currentConfig.modules[packageName] = packageConfig;
-    return updateClientConfig(global, currentConfig);
-}
 
 export function getFavoritePackageManager(){
     return vscode.workspace.getConfiguration('scriptify').get<"npm" | "pnpm" | "yarn">('favoritePackageManager') || "npm";

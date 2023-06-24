@@ -4,12 +4,13 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from "axios";
-import { addPackageToClientConfig, getClientConfig, getFavoritePackageManager, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
+import { getFavoritePackageManager, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
 import { PackageJSON, ScriptFile } from './types';
 import { Scriptify } from './Scriptify';
 import { NodeVM, VMScript, VM } from "vm2";
 import { NpmResponse } from './NpmResponse';
 import { scriptifyConsole } from './console';
+import { ClientConfig } from './ClientConfig';
 
 
 /** Provide some features in script */
@@ -85,7 +86,10 @@ function downloadScript(keyword?: string) {
               return;
             }
 
+
             const global = locationChoice.label === "global";
+
+            const clientConfig = await new ClientConfig(global).load();
 
             const terminal = vscode.window.createTerminal("scriptify");
 
@@ -101,7 +105,8 @@ function downloadScript(keyword?: string) {
 
             terminal.sendText(`${installCommands[getFavoritePackageManager()]} ${scriptChoice.label}`);
 
-            addPackageToClientConfig(global, scriptChoice.label, { enabled: true });
+            //addPackageToClientConfig(global, scriptChoice.label, { enabled: true });
+            await clientConfig.addPackage(scriptChoice.label, { enabled: true }).save();
 
           });
 
@@ -121,7 +126,7 @@ function downloadScript(keyword?: string) {
 async function createScriptFile(createGlobally = false) {
 
   // Check or create config file
-  const clientConfig = await getClientConfig(createGlobally);
+  const clientConfig = await new ClientConfig(createGlobally).load();
 
   console.log(clientConfig);
 
