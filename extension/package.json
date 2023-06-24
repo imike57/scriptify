@@ -4,7 +4,7 @@
   "description": "Scriptify is a Visual Studio Code extension that allows you to create and apply JavaScript scripts to the current selection. With Scriptify, you can easily manipulate selected values using custom scripts.",
   "publisher": "scriptify",
   "icon": "./logo.png",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "repository": "https://github.com/imike57/scriptify/extension",
   "engines": {
     "vscode": "^1.79.0"
@@ -63,14 +63,14 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+    "vscode:prepublish": "npm run -S esbuild-base -- --minify && cp ./node_modules/vm2/lib/*.js ./out/",
+    "esbuild-base": "rimraf out && esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "build": "vsce package --no-dependencies",
+    "package_vsce": "vsce package --no-dependencies",
     "prepublishOnly": "echo \"Error: Extension should not be published. Use filter to exclude.\" && exit 1"
   },
   "devDependencies": {
@@ -85,6 +85,7 @@
     "eslint": "^8.41.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
+    "rimraf": "^5.0.1",
     "typescript": "^5.1.3"
   },
   "keywords": [

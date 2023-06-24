@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- - Fix: vm2 require path
+
 ## 2.0.0
 
 ### Major Changes
@@ -11,7 +17,6 @@
   - Enabled script downloads from the npm registry.
   - Removed global variables and methods from the previous version.
   - Updated example packages and add `prettier` example.
-
 
 ## 1.1.0
 
