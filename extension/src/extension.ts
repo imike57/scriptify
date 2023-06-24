@@ -9,7 +9,7 @@ import { PackageJSON, ScriptFile } from './types';
 import { Scriptify } from './Scriptify';
 import { NodeVM, VMScript, VM } from "vm2";
 import { NpmResponse } from './NpmResponse';
-import { scriptifyConsole } from './customConsole';
+import { scriptifyConsole } from './console';
 
 
 /** Provide some features in script */
