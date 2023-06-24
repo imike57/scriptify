@@ -70,7 +70,8 @@
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "build": "vsce package --no-dependencies"
+    "build": "vsce package --no-dependencies",
+    "publish": "echo \"Error: no publish specified\" && exit 1"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
