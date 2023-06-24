@@ -315,12 +315,44 @@ function openGlobalFolder() {
   vscode.env.openExternal(folderUri);
 }
 
+/** Open a markdown file formatted */
+function openFormattedMarkdown(filePath:string) {
+  // Construction of URI for the Markdown file
+  const markdownUri = vscode.Uri.file(filePath);
+  vscode.commands.executeCommand('markdown.showPreview', markdownUri);
+}
+
+/** Function called on activated to produce or alert about an update of Scriptify */
+function onUpdate(context: vscode.ExtensionContext) {
+
+  const extension = vscode.extensions.getExtension('scriptify.scriptify');
+  const extensionVersion = extension?.packageJSON.version;
+  const updatePopupKey = "updatePopupShown";
+
+  const storedVersion = context.globalState.get(updatePopupKey);
+  if (storedVersion !== extensionVersion || context.extensionMode === vscode.ExtensionMode.Development) {
+    vscode.window.showInformationMessage(`Scriptify has been updated to version ${extensionVersion}. Please refer to the migration guide to update and ensure compatibility with your scripts.`, 
+    "Show", "Cancel").then(choice => {
+      if (choice === "Show") {
+        openFormattedMarkdown(path.join(context.extensionPath, "migration.md"));
+      }
+
+      context.globalState.update(updatePopupKey, extensionVersion);
+    });
+  }
+
+}
+
+
 
 /**
  * This method is called when the extension is activated.
  * The extension is activated the very first time the command is executed.
  */
 export function activate(context: vscode.ExtensionContext) {
+
+  onUpdate(context);
+
   context.subscriptions.push(
     vscode.commands.registerCommand('scriptify.createScript', createScriptFile),
     vscode.commands.registerCommand('scriptify.createGlobalScript', createGlobalScriptFile),

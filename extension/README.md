@@ -73,7 +73,7 @@ module.exports = transform;
 
 ## Migration from Version 1.x to 2.x
 
-If you are upgrading from Scriptify 1.x to 2.x, please refer to the [migration guide](../docs/migration.md) for detailed instructions on how to migrate your scripts and adapt to the new features and changes.
+If you are upgrading from Scriptify 1.x to 2.x, please refer to the [migration guide](./migration.md) for detailed instructions on how to migrate your scripts and adapt to the new features and changes.
 
 ## Contributing
 
