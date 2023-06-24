@@ -51,7 +51,11 @@
         },
         "scriptify.favoritePackageManager": {
           "type": "string",
-          "enum": ["npm", "pnpm", "yarn"],
+          "enum": [
+            "npm",
+            "pnpm",
+            "yarn"
+          ],
           "default": "npm",
           "description": "Select your package manager"
         }
@@ -59,13 +63,14 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run compile",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "package_vsce": "vsce package"
+    "build": "vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
@@ -75,6 +80,7 @@
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "@vscode/test-electron": "^2.3.2",
+    "esbuild": "^0.18.7",
     "eslint": "^8.41.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
