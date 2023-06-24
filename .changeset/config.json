@@ -4,7 +4,7 @@
   "commit": false,
   "linked": [],
   "access": "restricted",
-  "baseBranch": "feature/globalScriptifyVar",
+  "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": []
 }
