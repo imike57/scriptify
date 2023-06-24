@@ -1,7 +1,7 @@
 {
     "name": "@scriptify-vscode/eval",
     "displayName": "Eval",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "eval() for Scriptify",
     "main": "index.js",
     "scripts": {

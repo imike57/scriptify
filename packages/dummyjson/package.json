@@ -1,7 +1,7 @@
 {
     "name": "@scriptify-vscode/dummyjson",
     "displayName": "DummyJSON",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "DummyJSON API for scriptify. Get dummy/fake JSON data to use as placeholder in development or in prototype testing.",
     "main": "index.js",
     "scripts": {
