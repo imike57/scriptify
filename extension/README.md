@@ -1,7 +1,5 @@
 # Scriptify
 
-![Scriptify Logo](./logo.png)
-
 Scriptify is a Visual Studio Code extension that allows you to create and apply JavaScript scripts to the current selection. With Scriptify, you can easily manipulate selected values using custom scripts.
 
 <p align="center">
