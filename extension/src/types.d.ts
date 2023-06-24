@@ -14,8 +14,20 @@ export interface ScriptFile {
     /** Some description added to the selection list. */
     description?: string,
     /** Path to the module root. */
-    modulePath:string
+    modulePath:string,
+    /** Local config defined in scriptify.json client file. */
+    config?:ClientConfig['modules'][string]
 }
+
+export interface ClientConfig {
+    modules: { [key:string]: {
+        [key:string]:any,
+        enabled: boolean,
+        path?:string,
+        env?:any
+    }}
+}
+
 
 /**
  * Represents a file in GitHub.
@@ -53,7 +65,7 @@ export interface PackageJSON {
     version: string;
     repository?: string;
     categories?: string[];
-    main: string;
+    main?: string;
     devDependencies?: Dependencies;
     keywords?: string[];
     dependencies?: Dependencies;

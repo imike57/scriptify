@@ -2,7 +2,7 @@ import * as path from "path";
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as os from 'os';
-import { PackageJSON, ScriptFile } from "./types";
+import { ClientConfig, PackageJSON, ScriptFile } from "./types";
 
 /** Return the current version of the extension. */
 export function getVersion() {
@@ -78,12 +78,6 @@ export function sanitizeFileName(fileName: string, replacementChar: string = '-'
 }
 
 
-interface ClientConfig {
-    modules: { [key:string]: {
-        enabled: boolean,
-        path?:string
-    }}
-}
 
 /**
  * Retrieves the script files located in the specified parent path.
@@ -113,21 +107,20 @@ export async function getScriptFiles(location: "local" | "global"): Promise<Scri
     return Object.entries(clientConfig.modules).filter(entry => {
         return entry[1].enabled;
     }).map(entry => {
-
         const moduleName = entry[0];
         const moduleConfig = entry[1];
         const moduleDefaultPath = path.join(scriptFolderPath, "node_modules", moduleName);
         const modulePath = moduleConfig.path ? path.join(scriptFolderPath, moduleConfig.path ) : moduleDefaultPath;
         const modulePkgJson = getModulePackageJSON(modulePath);
-        console.log("URI", path.join(modulePath, modulePkgJson.main));
 
         return {
             id: moduleName,
             location: location,
             name: modulePkgJson.scriptify?.name || modulePkgJson.displayName || moduleName,
             description: modulePkgJson.scriptify?.description || modulePkgJson.description,
-            uri: path.join(modulePath, modulePkgJson.main),
-            modulePath: modulePath
+            uri: path.join(modulePath, modulePkgJson.main || "index.js"),
+            modulePath: modulePath,
+            config: moduleConfig
             
         };
     });

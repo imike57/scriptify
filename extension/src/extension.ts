@@ -5,10 +5,12 @@ import * as path from 'path';
 import * as fs from 'fs';
 import axios from "axios";
 import { addPackageToClientConfig, getClientConfig, getFavoritePackageManager, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
-import { GithubFile, PackageJSON, ScriptFile } from './types';
+import { PackageJSON, ScriptFile } from './types';
 import { Scriptify } from './Scriptify';
 import { NodeVM, VMScript, VM } from "vm2";
 import { NpmResponse } from './NpmResponse';
+import { scriptifyConsole } from './customConsole';
+
 
 /** Provide some features in script */
 export const scriptify = new Scriptify();
@@ -16,13 +18,13 @@ export const scriptify = new Scriptify();
 /**
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
  */
-function downloadScript(keyword?:string) {
+function downloadScript(keyword?: string) {
   // TODO, filter package for current version only.
   const compatibleVersion = getVersion();
 
   const npmScopedAPI = `https://registry.npmjs.org/-/v1/search?text=scope:scriptify-vscode${keyword ? `+${keyword}` : ''}&size=250`;
 
-  
+
   axios<NpmResponse>({
     method: "get",
     url: npmScopedAPI,
@@ -48,7 +50,7 @@ function downloadScript(keyword?:string) {
     });
 
 
-    vscode.window.showQuickPick([...base,...list], { 
+    vscode.window.showQuickPick([...base, ...list], {
       title: `Select a script (${compatibleVersion})`
     }).then(async scriptChoice => {
 
@@ -62,7 +64,7 @@ function downloadScript(keyword?:string) {
 
             return downloadScript(keyword);
           });
-      
+
 
         } else {
 
@@ -88,22 +90,22 @@ function downloadScript(keyword?:string) {
             const terminal = vscode.window.createTerminal("scriptify");
 
             terminal.show();
-  
+
             terminal.sendText(`cd ${await getScriptFolder(global)}`);
-  
+
             const installCommands = {
               npm: "npm i",
               pnpm: "pnpm add",
               yarn: "yarn add"
             };
-  
+
             terminal.sendText(`${installCommands[getFavoritePackageManager()]} ${scriptChoice.label}`);
-  
+
             addPackageToClientConfig(global, scriptChoice.label, { enabled: true });
 
           });
 
-        
+
 
         }
       }
@@ -134,7 +136,7 @@ async function createScriptFile(createGlobally = false) {
     }
   }).then(scriptName => {
     if (scriptName) {
-      const packageJSONFile:PackageJSON = {
+      const packageJSONFile: PackageJSON = {
         "name": `@scriptify-vscode/${scriptName}`,
         "displayName": `${scriptName}`,
         "version": "0.0.0",
@@ -153,7 +155,7 @@ async function createScriptFile(createGlobally = false) {
           "description": ""
         }
       };
-      
+
 
       const scriptContent = `
 function transform(value) {
@@ -179,15 +181,19 @@ function createGlobalScriptFile() {
 }
 
 
-async function executeVM(scriptString:string, scriptFile:ScriptFile ){
+async function executeVM(scriptString: string, scriptFile: ScriptFile) {
 
   const rootPath = await getScriptFolder(scriptFile.location === "global");
+
+
 
   console.log("scriptFile", scriptFile);
 
   const vm = new NodeVM({
+    console: "inherit",
     sandbox: {
-      scriptify: scriptify
+      scriptify: scriptify,
+      console: scriptifyConsole
     },
     require: {
       builtin: ['*'],
@@ -198,19 +204,18 @@ async function executeVM(scriptString:string, scriptFile:ScriptFile ){
       mock: {
         vscode: vscode,
         scriptify: scriptify
+
       }
-    }
+    },
+    env: scriptFile.config?.env
   });
 
   // Call the script
-  const transform = new VMScript(scriptString, scriptFile.uri );
+  const transform = new VMScript(scriptString, scriptFile.uri);
 
 
-  console.log("transform", transform);
+  return vm.run(transform, scriptFile.uri);
 
-    
-  return vm.run(transform);
-  
 }
 
 /**
@@ -233,25 +238,23 @@ async function applyScript() {
     vscode.window.showErrorMessage('No scripts found.');
     return;
   }
-  
-  vscode.window.showQuickPick(files.map(scriptFile => { 
-    return { 
-      label : scriptFile.name, 
-      description: scriptFile.location, 
+
+  vscode.window.showQuickPick(files.map(scriptFile => {
+    return {
+      label: scriptFile.name,
+      description: scriptFile.location,
       detail: scriptFile.description,
       data: scriptFile
-    }; 
+    };
   }), {
     placeHolder: 'Select a script to apply'
   }).then(async scriptChoice => {
     if (scriptChoice) {
       try {
         const scriptPath = scriptChoice.data.uri;
-        console.log("scriptPath", scriptPath);
         var scriptString = fs.readFileSync(scriptPath, "utf-8");
         executeVM(scriptString, scriptChoice.data).then(transformFn => {
-          
-          console.log(transformFn);;
+
           const editor = vscode.window.activeTextEditor;
 
           if (editor) {
@@ -259,7 +262,7 @@ async function applyScript() {
             const selections = editor.selections;
             const transformedTexts = selections.map(async (selection, index) => {
               const selectedText = document.getText(selection);
-              return transformFn(selectedText, index);
+              return transformFn(selectedText, index, scriptChoice.data.config);
             });
 
             Promise.all(transformedTexts).then(tTexts => {
@@ -276,7 +279,7 @@ async function applyScript() {
               });
             }).catch(err => {
               console.error(err);
-              scriptify.log("Error", err);
+              scriptifyConsole.log("Error", err);
             });
 
 
@@ -284,11 +287,11 @@ async function applyScript() {
         }).catch(err => {
 
           console.log(err);
-          scriptify.log(err);
+          scriptifyConsole.log(err);
         });
 
       } catch (error: any) {
-        scriptify.log("Error", error);
+        scriptifyConsole.log("Error", error);
       }
     }
   });
