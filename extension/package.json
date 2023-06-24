@@ -5,7 +5,7 @@
   "publisher": "scriptify",
   "icon": "./logo.png",
   "version": "1.1.0",
-  "repository": "https://github.com/imike57/scriptify",
+  "repository": "https://github.com/imike57/scriptify/extension",
   "engines": {
     "vscode": "^1.79.0"
   },

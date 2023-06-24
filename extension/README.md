@@ -4,6 +4,9 @@
 
 Scriptify is a Visual Studio Code extension that allows you to create and apply JavaScript scripts to the current selection. With Scriptify, you can easily manipulate selected values using custom scripts.
 
+<img src="../docs/img/create.gif" width=75%>
+
+
 ## Features
 
 - **Create and Apply Scripts**: Write and execute JavaScript scripts directly within Visual Studio Code.

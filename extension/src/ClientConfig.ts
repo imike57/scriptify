@@ -40,26 +40,35 @@ export class ClientConfig {
 
             } else {
                 await this.createConfig(this.global);
-                return this.load();
+                resolve(this.load()) ;
             }
-
-
-
 
         });
     }
 
     async createConfig(global: boolean) {
+        return new Promise(async (resolve, reject) => {
+            try {
 
-        const workspace = await getScriptFolder(global);
+                const workspace = await getScriptFolder(global);
 
-        const tpl = `{
-            "modules": {
-                
+                const tpl = {
+                    "modules": {
+
+                    }
+                };
+
+                fs.mkdirSync(workspace, { recursive: true });
+
+                fs.writeFileSync(path.join(workspace, "scriptify.json"), JSON.stringify(tpl, null, 4), "utf-8");
+
+                resolve(this);
+
+
+            } catch (error) {
+                reject(error);
             }
-        }`;
-
-        fs.writeFileSync(path.join(workspace, "scriptify.json"), tpl, "utf-8");
+        });
     }
 
 
