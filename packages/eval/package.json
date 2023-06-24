@@ -1,0 +1,19 @@
+{
+    "name": "@scriptify-vscode/eval",
+    "displayName": "Eval",
+    "version": "0.0.0",
+    "description": "eval() for Scriptify",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "scriptify",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {},
+    "scriptify": {
+        "name": "Eval",
+        "description": "The eval() function evaluates JavaScript code represented as a string and returns its completion value. The source is parsed as a script."
+    }
+}
