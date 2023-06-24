@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "pnpm -r compile"
+    "compile": "pnpm -r compile",
+    "publish": "pnpm --filter=!scriptify publish"
   },
   "keywords": [],
   "author": "",
