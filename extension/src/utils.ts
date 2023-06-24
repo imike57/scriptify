@@ -82,7 +82,7 @@ export async function getScriptFiles(location: "local" | "global"): Promise<Scri
         return [];
     }
 
-    const getModulePackageJSON = (modulePath:string): PackageJSON => {
+    const getModulePackageJSON = (modulePath: string): PackageJSON => {
         const pkgJSONPath = path.join(modulePath, "package.json");
 
         return JSON.parse(fs.readFileSync(pkgJSONPath, "utf-8"));
@@ -99,7 +99,7 @@ export async function getScriptFiles(location: "local" | "global"): Promise<Scri
         const moduleName = entry[0];
         const moduleConfig = entry[1];
         const moduleDefaultPath = path.join(scriptFolderPath, "node_modules", moduleName);
-        const modulePath = moduleConfig.path ? path.join(scriptFolderPath, moduleConfig.path ) : moduleDefaultPath;
+        const modulePath = moduleConfig.path ? path.join(scriptFolderPath, moduleConfig.path) : moduleDefaultPath;
         const modulePkgJson = getModulePackageJSON(modulePath);
 
         return {
@@ -110,7 +110,7 @@ export async function getScriptFiles(location: "local" | "global"): Promise<Scri
             uri: path.join(modulePath, modulePkgJson.main || "index.js"),
             modulePath: modulePath,
             config: moduleConfig
-            
+
         };
     });
 }
@@ -153,7 +153,7 @@ export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: s
     const scriptName = packageJSON.name;
     const defaultModuleFolder = "./my-modules";
 
-   
+
     clientConfig.addPackage(packageJSON.name, { enabled: true, path: `./my-modules/${packageJSON.name}` });
 
     return new Promise<{ scriptPath: string }>(async (resolve, reject) => {
@@ -200,6 +200,6 @@ export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: s
 }
 
 /** Get favorite package manager */
-export function getFavoritePackageManager(){
+export function getFavoritePackageManager() {
     return vscode.workspace.getConfiguration('scriptify').get<"npm" | "pnpm" | "yarn">('favoritePackageManager') || "npm";
 }
