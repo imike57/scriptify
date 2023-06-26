@@ -4,8 +4,8 @@
 
 1. User-created scripts are now executed using the VM2 library for increased isolation and security.
 2. Scripts are treated as executable packages, allowing them to have dependencies like any other Node.js package.
-3. A configuration file, [scriptify.json]("./scriptify.json.md"), has been introduced to define script properties.
-4. Properties in [scriptify.json]("./scriptify.json.md") include environment variables, script activation/deactivation, and file path.
+3. A configuration file, [scriptify.json](./scriptify.json.md), has been introduced to define script properties.
+4. Properties in [scriptify.json](./scriptify.json.md) include environment variables, script activation/deactivation, and file path.
 5. Adding dependencies to a script now follows the standard Node.js dependency management using package.json and npm/yarn/pnpm.
 6. Scripts can be shared and downloaded from the npm registry under the `@scriptify-vscode` scope.
 
