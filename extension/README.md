@@ -69,6 +69,43 @@ module.exports = transform;
 
 ```
 
+## Extension API
+
+The Scriptify extension exposes the extension API with the Storage service, allowing you to store and retrieve data within the extension context.
+
+Two storages are available:
+- `API.storage.global`: Use this storage to store data globally, which is shared across workspaces.
+- `API.storage.workspace`: Use this storage to store data specific to each workspace.
+
+
+Here's an example of using the Storage service in your custom script : 
+
+```javascript
+const vscode = require('vscode');
+
+// Transformation function
+function transform(value) {
+  
+  // Get Scriptify API from the extension
+  const API = vscode.extensions.getExtension('scriptify.scriptify').exports;
+
+  // Update a key in the workspace storage
+  API.storage.workspace.update("yourScript.foo", "bar");
+
+  // Iterate over all keys in the workspace storage
+  API.storage.workspace.keys.forEach(key => {
+    // Log the value associated with each key to the console
+    console.log(API.storage.workspace.get(key));
+  });
+
+  // Return the transformed value
+  return value;
+}
+
+module.exports = transform;
+
+```
+
 ## Migration from Version 1.x to 2.x
 
 If you are upgrading from Scriptify 1.x to 2.x, please refer to the [migration guide](https://github.com/imike57/scriptify/blob/main/docs/migration.md) for detailed instructions on how to migrate your scripts and adapt to the new features and changes.
