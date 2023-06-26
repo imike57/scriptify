@@ -1,10 +1,13 @@
 import _, { LoDashStatic } from 'lodash';
-import { window } from 'vscode';
+import vscode, { window } from 'vscode';
+
+
+const excludedProperties = ["_"];
 
 async function transform(value: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const lodashFns = Object.entries(_).filter(
-      (el: [string, any]) => typeof el[1] === 'function'
+      (el: [string, any]) => typeof el[1] === 'function' && !excludedProperties.includes(el[0])
     );
     const keys = lodashFns.map((el: [string, any]) => el[0]);
     window.showQuickPick(keys).then(async (val: string | undefined) => {
