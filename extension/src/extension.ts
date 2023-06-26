@@ -11,6 +11,7 @@ import { NodeVM, VMScript, VM } from "vm2";
 import { NpmResponse } from './NpmResponse';
 import { scriptifyConsole } from './console';
 import { ClientConfig } from './ClientConfig';
+import { ClientStorage } from './ClientStorage';
 
 
 /** Provide some features in script */
@@ -361,6 +362,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
     vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder)
   );
+
+  return {
+    storage : {
+      global: new ClientStorage(context, "globalState"),
+      workspace: new ClientStorage(context, "workspaceState")
+    }
+  };
 }
 
 /**
