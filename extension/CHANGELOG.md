@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.2
+
+### Patch Changes
+
+- 295b8df: Fix repository property value
+
 ## 2.0.1
 
 ### Patch Changes
