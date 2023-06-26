@@ -3,7 +3,7 @@
 Scriptify is a Visual Studio Code extension that allows you to create and apply JavaScript scripts to the current selection. With Scriptify, you can easily manipulate selected values using custom scripts.
 
 <p align="center">
-<img src="../docs/img/create.gif" width=75%>
+<img src="https://raw.githubusercontent.com/imike57/scriptify/main/docs/img/create.gif" width=100%>
 </p>
 
 ## Features
@@ -71,7 +71,7 @@ module.exports = transform;
 
 ## Migration from Version 1.x to 2.x
 
-If you are upgrading from Scriptify 1.x to 2.x, please refer to the [migration guide](./migration.md) for detailed instructions on how to migrate your scripts and adapt to the new features and changes.
+If you are upgrading from Scriptify 1.x to 2.x, please refer to the [migration guide](https://github.com/imike57/scriptify/blob/main/docs/migration.md) for detailed instructions on how to migrate your scripts and adapt to the new features and changes.
 
 ## Contributing
 

@@ -334,7 +334,7 @@ function onUpdate(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage(`Scriptify has been updated to version ${extensionVersion}. Please refer to the migration guide to update and ensure compatibility with your scripts.`, 
     "Show", "Cancel").then(choice => {
       if (choice === "Show") {
-        openFormattedMarkdown(path.join(context.extensionPath, "migration.md"));
+        vscode.env.openExternal(vscode.Uri.parse(`https://github.com/imike57/scriptify/blob/${extensionVersion}/docs/migration.md`));
       }
 
       context.globalState.update(updatePopupKey, extensionVersion);
