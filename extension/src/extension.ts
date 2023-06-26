@@ -12,6 +12,7 @@ import { NpmResponse } from './NpmResponse';
 import { scriptifyConsole } from './console';
 import { ClientConfig } from './ClientConfig';
 import { ClientStorage } from './ClientStorage';
+import { RecentQuickPick } from './RecentQuickPick';
 
 
 /** Provide some features in script */
@@ -344,13 +345,16 @@ function onUpdate(context: vscode.ExtensionContext) {
 
 }
 
-
+/** Expose context */
+export var extensionContext: vscode.ExtensionContext | undefined;
 
 /**
  * This method is called when the extension is activated.
  * The extension is activated the very first time the command is executed.
  */
 export function activate(context: vscode.ExtensionContext) {
+
+  extensionContext = context;
 
   onUpdate(context);
 
@@ -367,7 +371,9 @@ export function activate(context: vscode.ExtensionContext) {
     storage : {
       global: new ClientStorage(context, "globalState"),
       workspace: new ClientStorage(context, "workspaceState")
-    }
+    },
+    recentQuickPick: RecentQuickPick
+
   };
 }
 
