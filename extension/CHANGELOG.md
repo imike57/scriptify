@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.1.0
+
+### Minor Changes
+
+- 18046af: Exposed extension API with Storage service
+
+### Patch Changes
+
+- 9c5b45a: Fix readme images and links paths
+
 ## 2.0.2
 
 ### Patch Changes
