@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "pnpm -r compile",
-    "publishAllPackages": "pnpm -r --filter='./packages/**' publish --dry-run --report-summary --no-git-checks",
+    "publishAllPackages": "pnpm -r --filter='./packages/**' publish --report-summary",
+    "publishAllPackagesDry": "pnpm -r --filter='./packages/**' publish --dry-run --report-summary --no-git-checks",
     "prepublishOnly": "echo \"Error: Workspace should not be published\" && exit 1"
   },
   "keywords": [],
