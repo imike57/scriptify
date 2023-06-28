@@ -1,4 +1,3 @@
-declare var scriptify:any;
 import fs from 'fs';
 import path from 'path';
 import vscode from 'vscode';
@@ -81,7 +80,7 @@ async function transform(value:string) {
     });
 
   } catch (error) {
-    scriptify.log("error", error);
+    console.log("error", error);
   }
 }
 
