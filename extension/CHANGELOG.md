@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.2.0
+
+### Minor Changes
+
+- 6e77336: - Added a tree view.
+
 ## 2.1.0
 
 ### Minor Changes

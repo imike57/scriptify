@@ -1,5 +1,11 @@
 # @scriptify-vscode/dummyjson
 
+## 1.0.1
+
+### Patch Changes
+
+- c3e76c4: Fix obsolete dependencies
+
 ## 1.0.0
 
 ### Major Changes

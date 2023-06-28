@@ -4,7 +4,7 @@
   "description": "Scriptify is a Visual Studio Code extension that allows you to create and apply JavaScript scripts to the current selection. With Scriptify, you can easily manipulate selected values using custom scripts.",
   "publisher": "scriptify",
   "icon": "./logo.png",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "repository": "https://github.com/imike57/scriptify/tree/main/extension",
   "engines": {
     "vscode": "^1.79.0"
@@ -38,8 +38,7 @@
           "group": "inline"
         }
       ],
-      "editor/context": [ ]
-     
+      "editor/context": []
     },
     "submenus": [],
     "commands": [
@@ -49,7 +48,8 @@
       },
       {
         "command": "scriptify.tree.refresh",
-        "title": "Refresh", "enablement": "view == scriptify.tree"
+        "title": "Refresh",
+        "enablement": "view == scriptify.tree"
       },
       {
         "command": "scriptify.createScript",
