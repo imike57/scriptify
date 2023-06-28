@@ -15,7 +15,42 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "scriptify.tree",
+          "name": "Scriptify"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "scriptify.tree.refresh",
+          "when": "view == 'scriptify.tree'",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "scriptify.tree.apply",
+          "when": "viewItem == ScriptTreeItem",
+          "group": "inline"
+        }
+      ],
+      "editor/context": [ ]
+     
+    },
+    "submenus": [],
     "commands": [
+      {
+        "command": "scriptify.tree.apply",
+        "title": "Apply"
+      },
+      {
+        "command": "scriptify.tree.refresh",
+        "title": "Refresh", "enablement": "view == scriptify.tree"
+      },
       {
         "command": "scriptify.createScript",
         "title": "[Scriptify]: Create New Script"
