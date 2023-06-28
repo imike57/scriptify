@@ -67,7 +67,7 @@ export class ScriptsTreeProvider implements vscode.TreeDataProvider<ScriptTreeIt
      * @returns The parent tree item.
      */
     getParent?(element: ScriptTreeItem): vscode.ProviderResult<ScriptTreeItem> {
-        throw new Error("Method not implemented.");
+        return null;
     }
 
     /**
@@ -78,6 +78,6 @@ export class ScriptsTreeProvider implements vscode.TreeDataProvider<ScriptTreeIt
      * @returns The resolved tree item.
      */
     resolveTreeItem?(item: vscode.TreeItem, element: ScriptTreeItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem> {
-        throw new Error("Method not implemented.");
+        return item;
     }
 }
