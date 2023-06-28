@@ -3,7 +3,7 @@ function transform(value) {
   try {
     return eval(value);
   } catch (error) {
-    scriptify.log(error);
+    console.log(error);
     return value;
   }
 }
