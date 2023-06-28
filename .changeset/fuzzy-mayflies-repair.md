@@ -2,4 +2,4 @@
 "scriptify": minor
 ---
 
-- Added a tree view
+- Added a tree view. 
