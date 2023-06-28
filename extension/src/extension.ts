@@ -12,6 +12,7 @@ import { NpmResponse } from './NpmResponse';
 import { scriptifyConsole } from './console';
 import { ClientConfig } from './ClientConfig';
 import { ClientStorage } from './ClientStorage';
+import { ScriptsTreeProvider } from './ScriptsTreeProvider';
 
 
 /** Provide some features in script */
@@ -191,8 +192,6 @@ async function executeVM(scriptString: string, scriptFile: ScriptFile) {
 
   const rootPath = await getScriptFolder(scriptFile.location === "global");
 
-
-
   console.log("scriptFile", scriptFile);
 
   const vm = new NodeVM({
@@ -227,80 +226,85 @@ async function executeVM(scriptString: string, scriptFile: ScriptFile) {
 /**
  * Applies a script to the selected text in the active editor.
  */
-async function applyScript() {
+async function applyScript(scriptFile?: ScriptFile) {
 
-  let files: Array<ScriptFile> = [];
-  try {
-    let localesFiles = await getScriptFiles("local");
-    let globalFiles = await getScriptFiles("global");
-    files = [...localesFiles, ...globalFiles].sort((a, b) => {
-      return a.name.localeCompare(b.name);
-    });
-  } catch (err) {
-    return vscode.window.showErrorMessage(`${err}`);
-  }
 
-  if (files.length === 0) {
-    vscode.window.showErrorMessage('No scripts found.');
-    return;
-  }
+  if (scriptFile) {
+    try {
+      const scriptPath = scriptFile.uri;
+      var scriptString = fs.readFileSync(scriptPath, "utf-8");
+      executeVM(scriptString, scriptFile).then(transformFn => {
 
-  vscode.window.showQuickPick(files.map(scriptFile => {
-    return {
-      label: scriptFile.name,
-      description: scriptFile.location,
-      detail: scriptFile.description,
-      data: scriptFile
-    };
-  }), {
-    placeHolder: 'Select a script to apply'
-  }).then(async scriptChoice => {
-    if (scriptChoice) {
-      try {
-        const scriptPath = scriptChoice.data.uri;
-        var scriptString = fs.readFileSync(scriptPath, "utf-8");
-        executeVM(scriptString, scriptChoice.data).then(transformFn => {
+        const editor = vscode.window.activeTextEditor;
 
-          const editor = vscode.window.activeTextEditor;
+        if (editor) {
+          const document = editor.document;
+          const selections = editor.selections;
+          const transformedTexts = selections.map(async (selection, index) => {
+            const selectedText = document.getText(selection);
+            return transformFn(selectedText, index, scriptFile.config);
+          });
 
-          if (editor) {
-            const document = editor.document;
-            const selections = editor.selections;
-            const transformedTexts = selections.map(async (selection, index) => {
-              const selectedText = document.getText(selection);
-              return transformFn(selectedText, index, scriptChoice.data.config);
-            });
-
-            Promise.all(transformedTexts).then(tTexts => {
-              editor.edit(editBuilder => {
-                selections.forEach((selection, index) => {
-                  editBuilder.replace(selection, tTexts[index]);
-                });
-              }).then(success => {
-                if (success) {
-                  vscode.window.showInformationMessage('Script applied successfully.');
-                } else {
-                  vscode.window.showErrorMessage('Failed to apply script.');
-                }
+          Promise.all(transformedTexts).then(tTexts => {
+            editor.edit(editBuilder => {
+              selections.forEach((selection, index) => {
+                editBuilder.replace(selection, tTexts[index]);
               });
-            }).catch(err => {
-              console.error(err);
-              scriptifyConsole.log("Error", err);
+            }).then(success => {
+              if (success) {
+                vscode.window.showInformationMessage('Script applied successfully.');
+              } else {
+                vscode.window.showErrorMessage('Failed to apply script.');
+              }
             });
+          }).catch(err => {
+            console.error(err);
+            scriptifyConsole.log("Error", err);
+          });
 
 
-          }
-        }).catch(err => {
+        }
+      }).catch(err => {
 
-          console.log(err);
-          scriptifyConsole.log(err);
-        });
+        console.log(err);
+        scriptifyConsole.log(err);
+      });
 
-      } catch (error: any) {
-        scriptifyConsole.log("Error", error);
-      }
+    } catch (error: any) {
+      scriptifyConsole.log("Error", error);
     }
-  });
+  } else {
+    let files: Array<ScriptFile> = [];
+    try {
+      let localesFiles = await getScriptFiles("local");
+      let globalFiles = await getScriptFiles("global");
+      files = [...localesFiles, ...globalFiles].sort((a, b) => {
+        return a.name.localeCompare(b.name);
+      });
+    } catch (err) {
+      return vscode.window.showErrorMessage(`${err}`);
+    }
+  
+    if (files.length === 0) {
+      vscode.window.showErrorMessage('No scripts found.');
+      return;
+    }
+  
+    vscode.window.showQuickPick(files.map(scriptFile => {
+      return {
+        label: scriptFile.name,
+        description: scriptFile.location,
+        detail: scriptFile.description,
+        data: scriptFile
+      };
+    }), {
+      placeHolder: 'Select a script to apply'
+    }).then(async scriptChoice => {
+        applyScript(scriptChoice?.data);
+    });
+  }
+
+  
 }
 
 
@@ -351,8 +355,9 @@ function onUpdate(context: vscode.ExtensionContext) {
  * The extension is activated the very first time the command is executed.
  */
 export function activate(context: vscode.ExtensionContext) {
-
+  const scriptsTreeProvider = new ScriptsTreeProvider();
   onUpdate(context);
+
 
   context.subscriptions.push(
     vscode.commands.registerCommand('scriptify.createScript', createScriptFile),
@@ -360,7 +365,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.applyScript', applyScript),
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
     vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
-    vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder)
+    vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder),
+    vscode.commands.registerCommand('scriptify.tree.apply', (choice: { script:ScriptFile}) => {
+      applyScript(choice.script);
+    }),
+    vscode.window.registerTreeDataProvider('scriptify.tree', scriptsTreeProvider),
+    vscode.commands.registerCommand('scriptify.tree.refresh', () => scriptsTreeProvider.refresh())
   );
 
   return {
