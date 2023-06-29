@@ -314,7 +314,10 @@ async function applyScript(scriptFile?: ScriptFile) {
     }), {
       placeHolder: 'Select a script to apply'
     }).then(async scriptChoice => {
-        applyScript(scriptChoice?.data);
+      if (!scriptChoice?.data) {
+        return;
+      }
+      applyScript(scriptChoice.data);
     });
   }
 
