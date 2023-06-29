@@ -15,36 +15,58 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
-    
     "viewsWelcome": [
       {
         "view": "scriptify.tree",
-        "contents": "No scripts found. \n[Create global script](command:scriptify.createGlobalScript)\n[Create local script](command:scriptify.createScript)\n[Download](command:scriptify.downloadScript)"
+        "contents": "No scripts found. \n[Create a script](command:scriptify.createScript)\n[Download](command:scriptify.downloadScript)"
       }
     ],
     "views": {
-      "explorer": [{
-        "id": "scriptify.tree",
-        "name": "Scriptify"
-      }]
+      "explorer": [
+        {
+          "id": "scriptify.tree",
+          "name": "Scriptify"
+        }
+      ]
     },
     "menus": {
-      "view/title": [{
-        "command": "scriptify.tree.refresh",
-        "when": "view == 'scriptify.tree'",
-        "group": "navigation"
-      }],
-      "view/item/context": [{
-        "command": "scriptify.tree.apply",
-        "when": "viewItem == ScriptTreeItem",
-        "group": "inline"
-      }],
+      "view/title": [
+        {
+          "command": "scriptify.tree.refresh",
+          "when": "view == 'scriptify.tree'",
+          "group": "navigation"
+        },
+        {
+          "command": "scriptify.tree.create",
+          "when": "view == 'scriptify.tree'",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "scriptify.tree.apply",
+          "when": "viewItem == ScriptTreeItem",
+          "group": "inline"
+        },
+        {
+          "command": "scriptify.tree.remove",
+          "when": "viewItem == ScriptTreeItem",
+          "group": "inline"
+        }
+      ],
       "editor/context": []
     },
     "submenus": [],
-    "commands": [{
+    "commands": [
+      {
         "command": "scriptify.tree.apply",
-        "title": "Apply"
+        "title": "Apply",
+        "enablement": "view == scriptify.tree"
+      },
+      {
+        "command": "scriptify.tree.remove",
+        "title": "Remove",
+        "enablement": "view == scriptify.tree"
       },
       {
         "command": "scriptify.tree.refresh",
@@ -52,12 +74,13 @@
         "enablement": "view == scriptify.tree"
       },
       {
-        "command": "scriptify.createScript",
-        "title": "[Scriptify]: Create New Script"
+        "command": "scriptify.tree.create",
+        "title": "Create",
+        "enablement": "view == scriptify.tree"
       },
       {
-        "command": "scriptify.createGlobalScript",
-        "title": "[Scriptify]: Create New Global Script"
+        "command": "scriptify.createScript",
+        "title": "[Scriptify]: Create New Script"
       },
       {
         "command": "scriptify.applyScript",
@@ -136,6 +159,7 @@
   ],
   "dependencies": {
     "axios": "^1.4.0",
+    "semver": "^7.5.3",
     "vm2": "^3.9.19"
   },
   "types": "./out/types/extension.d.ts"

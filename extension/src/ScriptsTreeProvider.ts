@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { ScriptTreeItem } from "./ScriptTreeItem";
 import { getScriptFiles } from "./utils";
+import { ScriptScope } from "./ScriptScope";
 
 /**
  * Tree view provider for scripts.
@@ -47,8 +48,8 @@ export class ScriptsTreeProvider implements vscode.TreeDataProvider<ScriptTreeIt
      * @returns The array of script tree items.
      */
     async getChildren(element?: ScriptTreeItem | undefined): Promise<ScriptTreeItem[]> {
-        const globalScripts = await getScriptFiles("global");
-        const localScripts = await getScriptFiles("local");
+        const globalScripts = await getScriptFiles(ScriptScope.global);
+        const localScripts = await getScriptFiles(ScriptScope.local);
 
         if (!localScripts.length && !globalScripts.length) {
             return [];

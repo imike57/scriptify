@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import axios from "axios";
 import { getFavoritePackageManager, getGlobalFolder, getScriptFiles, getScriptFolder, getVersion, writeScriptFile } from './utils';
 import { PackageJSON, ScriptFile } from './types';
+import { ScriptScope } from "./ScriptScope";
 import { Scriptify } from './Scriptify';
 import { NodeVM, VMScript, VM } from "vm2";
 import { NpmResponse } from './NpmResponse';
@@ -13,10 +14,11 @@ import { scriptifyConsole } from './console';
 import { ClientConfig } from './ClientConfig';
 import { ClientStorage } from './ClientStorage';
 import { ScriptsTreeProvider } from './ScriptsTreeProvider';
-
+import * as semver from "semver";
 
 /** Provide some features in script */
 export const scriptify = new Scriptify();
+
 
 /**
  * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
@@ -71,16 +73,18 @@ function downloadScript(keyword?: string) {
 
         } else {
 
-          const locations = [
+          const scopes: { label: string, value: ScriptScope }[] = [
             {
-              label: "global"
+              label: "Globally",
+              value: ScriptScope.global
             },
             {
-              label: "local"
+              label: "Locally",
+              value: ScriptScope.local
             }
           ];
 
-          vscode.window.showQuickPick(locations, {
+          vscode.window.showQuickPick(scopes, {
             title: "Where to install ?"
           }).then(async locationChoice => {
 
@@ -89,15 +93,14 @@ function downloadScript(keyword?: string) {
             }
 
 
-            const global = locationChoice.label === "global";
 
-            const clientConfig = await new ClientConfig(global).load();
+            const clientConfig = await new ClientConfig(locationChoice.value).load();
 
             const terminal = vscode.window.createTerminal("scriptify");
 
             terminal.show();
 
-            terminal.sendText(`cd ${await getScriptFolder(global)}`);
+            terminal.sendText(`cd ${await getScriptFolder(locationChoice.value)}`);
 
             const installCommands = {
               npm: "npm i",
@@ -133,10 +136,18 @@ function downloadScript(keyword?: string) {
  * Creates a script file in the current workspace or globally.
  * @param createGlobally Specifies whether to create the script globally.
  */
-async function createScriptFile(createGlobally = false) {
+async function createScriptFile() {
+
+  const scope:{ label:string, value: ScriptScope } | undefined = await vscode.window.showQuickPick([{ label: "Globally", value: ScriptScope.global }, { label: "Locally", value: ScriptScope.local }]);
+
+  console.log("scope", scope);
+
+  if (!scope) {
+    return;
+  }
 
   // Check or create config file
-  const clientConfig = await new ClientConfig(createGlobally).load();
+  const clientConfig = await new ClientConfig(scope.value).load();
 
   console.log(clientConfig);
 
@@ -181,7 +192,7 @@ function transform(value) {
 module.exports = transform;
 `;
 
-      writeScriptFile(packageJSONFile, scriptContent, createGlobally).then(res => {
+      writeScriptFile(packageJSONFile, scriptContent, scope.value).then(res => {
         scriptsTreeProvider.refresh();
       });
 
@@ -190,17 +201,10 @@ module.exports = transform;
 }
 
 
-/**
- * Creates a global script file.
- */
-function createGlobalScriptFile() {
-  createScriptFile(true);
-}
-
 
 async function executeVM(scriptString: string, scriptFile: ScriptFile) {
 
-  const rootPath = await getScriptFolder(scriptFile.location === "global");
+  const rootPath = await getScriptFolder(scriptFile.scope);
 
   console.log("scriptFile", scriptFile);
 
@@ -286,8 +290,8 @@ async function applyScript(scriptFile?: ScriptFile) {
   } else {
     let files: Array<ScriptFile> = [];
     try {
-      let localesFiles = await getScriptFiles("local");
-      let globalFiles = await getScriptFiles("global");
+      let localesFiles = await getScriptFiles(ScriptScope.local);
+      let globalFiles = await getScriptFiles(ScriptScope.global);
       files = [...localesFiles, ...globalFiles].sort((a, b) => {
         return a.name.localeCompare(b.name);
       });
@@ -303,7 +307,7 @@ async function applyScript(scriptFile?: ScriptFile) {
     vscode.window.showQuickPick(files.map(scriptFile => {
       return {
         label: scriptFile.name,
-        description: scriptFile.location,
+        description: ScriptScope[scriptFile.scope],
         detail: scriptFile.description,
         data: scriptFile
       };
@@ -344,8 +348,10 @@ function onUpdate(context: vscode.ExtensionContext) {
   const extensionVersion = extension?.packageJSON.version;
   const updatePopupKey = "updatePopupShown";
 
-  const storedVersion = context.globalState.get(updatePopupKey);
-  if (storedVersion !== extensionVersion || context.extensionMode === vscode.ExtensionMode.Development) {
+  const storedVersion = context.globalState.get<string>(updatePopupKey);
+
+  
+  if ((storedVersion && semver.lt(storedVersion, "2.0.0") && semver.gt(extensionVersion, "2.0.0")) || context.extensionMode === vscode.ExtensionMode.Development) {
     vscode.window.showInformationMessage(`Scriptify has been updated to version ${extensionVersion}. Please refer to the migration guide to update and ensure compatibility with your scripts.`, 
     "Show", "Cancel").then(choice => {
       if (choice === "Show") {
@@ -356,6 +362,41 @@ function onUpdate(context: vscode.ExtensionContext) {
     });
   }
 
+}
+
+async function removeScript(scriptFile:ScriptFile) {
+
+  const confirm = await vscode.window.showWarningMessage(`Are you sure to remove ${scriptFile.name} ?`, "Yes", "No");
+
+  if (!confirm || confirm === "No") {
+    return;
+  }
+
+  const clientConfig = await new ClientConfig(scriptFile.scope).load();
+
+  clientConfig.removePackage(scriptFile.packageJSON.name).then(res => {
+    fs.rm(scriptFile.modulePath, { recursive: true, force: true },(err) => {
+
+      if (!err){
+        console.log("clientConfig", clientConfig.modules);
+        clientConfig.save().then(res => {
+          console.log("saved", res.modules);
+          vscode.window.showInformationMessage(`${scriptFile.name} removed`);
+
+          scriptsTreeProvider.refresh();
+        });
+      } else {
+        console.error(err);
+        scriptifyConsole.log(err);
+      }
+    });
+
+  }).catch(err => {
+    console.error(err);
+    scriptifyConsole.log(err);
+  });
+
+  
 }
 
 
@@ -372,7 +413,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('scriptify.createScript', createScriptFile),
-    vscode.commands.registerCommand('scriptify.createGlobalScript', createGlobalScriptFile),
     vscode.commands.registerCommand('scriptify.applyScript', applyScript),
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
     vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
@@ -380,8 +420,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.tree.apply', (choice: { script:ScriptFile}) => {
       applyScript(choice.script);
     }),
+    vscode.commands.registerCommand('scriptify.tree.remove', (choice: { script:ScriptFile}) => {
+      removeScript(choice.script);
+    }),
     vscode.window.registerTreeDataProvider('scriptify.tree', scriptsTreeProvider),
-    vscode.commands.registerCommand('scriptify.tree.refresh', () => scriptsTreeProvider.refresh())
+    vscode.commands.registerCommand('scriptify.tree.refresh', () => scriptsTreeProvider.refresh()),
+    vscode.commands.registerCommand('scriptify.tree.create', createScriptFile)
   );
 
   return {

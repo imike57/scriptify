@@ -1,3 +1,5 @@
+import { ScriptScope } from "./ScriptScope";
+
 /**
  * Represents a script file.
  */
@@ -10,13 +12,15 @@ export interface ScriptFile {
     /** Full path to the script to execute. */
     uri: string;
     /** Where the module is located. */
-    location: "global" | "local",
+    scope: ScriptScope,
     /** Some description added to the selection list. */
     description?: string,
     /** Path to the module root. */
     modulePath:string,
     /** Local config defined in scriptify.json client file. */
-    config?:ClientConfig['modules'][string]
+    config?:ClientConfig['modules'][string],
+    /** Package JSON */
+    packageJSON:PackageJSON
 }
 
 /** Simple representation of a package.json file */
