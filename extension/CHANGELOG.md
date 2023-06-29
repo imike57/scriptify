@@ -1,5 +1,21 @@
 # Change Log
 
+## 2.2.1
+
+### Patch Changes
+
+- 4335769: - Improve tree navigation:
+
+  - Add "Create" and "Remove" actions.
+  - Enhance the tree navigation functionality.
+
+  - Add a Welcome message:
+
+    - Implement a Welcome message to provide users with a warm introduction to the system.
+
+  - Fix update popup related to the current and previous version:
+    - Rectify any issues with the update popup that may arise when transitioning between the current and previous versions.
+
 ## 2.2.0
 
 ### Minor Changes
