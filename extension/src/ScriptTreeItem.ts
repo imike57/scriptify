@@ -24,5 +24,7 @@ export class ScriptTreeItem extends vscode.TreeItem {
     constructor(name: string, script?: ScriptFile, collapsibleState?: vscode.TreeItemCollapsibleState) {
         super(name, collapsibleState);
         this.script = script;
+
+        this.tooltip = script?.description;
     }
 }

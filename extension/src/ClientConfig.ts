@@ -1,10 +1,11 @@
 import * as path from "path";
 import * as fs from "fs";
 import { checkFileExists, getScriptFolder } from "./utils";
+import { ScriptScope } from "./ScriptScope";
 
 export class ClientConfig {
 
-    global: boolean = false;
+    scope: ScriptScope = ScriptScope.local;
 
     modules: {
         [key: string]: {
@@ -15,8 +16,8 @@ export class ClientConfig {
         }
     } = {};
 
-    constructor(global: boolean) {
-        this.global = global;
+    constructor(scope: ScriptScope) {
+        this.scope = scope;
 
 
     }
@@ -25,7 +26,7 @@ export class ClientConfig {
 
         return new Promise(async (resolve, reject) => {
 
-            const workspace = await getScriptFolder(this.global);
+            const workspace = await getScriptFolder(this.scope);
             const clientConfigPath = path.join(workspace, "scriptify.json");
 
             if (checkFileExists(clientConfigPath)) {
@@ -39,18 +40,18 @@ export class ClientConfig {
                 }
 
             } else {
-                await this.createConfig(this.global);
+                await this.createConfig(this.scope);
                 resolve(this.load()) ;
             }
 
         });
     }
 
-    async createConfig(global: boolean) {
+    async createConfig(scope: ScriptScope) {
         return new Promise(async (resolve, reject) => {
             try {
 
-                const workspace = await getScriptFolder(global);
+                const workspace = await getScriptFolder(scope);
 
                 const tpl = {
                     "modules": {
@@ -85,7 +86,7 @@ export class ClientConfig {
         return new Promise<ClientConfig>(async (resolve, reject) => {
 
             try {
-                const workspace = await getScriptFolder(this.global);
+                const workspace = await getScriptFolder(this.scope);
                 fs.writeFileSync(path.join(workspace, "scriptify.json"), JSON.stringify(data, null, 4), "utf-8");
                 resolve(this);
             } catch (error) {
@@ -98,6 +99,17 @@ export class ClientConfig {
     addPackage(packageName: string, packageConfig: ClientConfig['modules'][string]) {
         this.modules[packageName] = packageConfig;
         return this;
+    }
+
+    removePackage(packageName: string ) {
+        return new Promise((resolve, reject) => {
+            if (packageName in this.modules) {
+                delete this.modules[packageName];
+                resolve(this) ;
+            } else {
+                reject(`No module found with name "${packageName}".`);
+            }        
+        });
     }
 
 }

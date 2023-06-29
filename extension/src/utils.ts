@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as os from 'os';
 import { PackageJSON, ScriptFile } from "./types";
+import { ScriptScope } from "./ScriptScope";
 import { ClientConfig } from "./ClientConfig";
 
 
@@ -73,9 +74,9 @@ export function getWorkspaceFolder(ignoreErrors = false): string | null {
  * @param parentPath The parent path where the script files are located.
  * @returns An array of script files.
  */
-export async function getScriptFiles(location: "local" | "global"): Promise<ScriptFile[]> {
+export async function getScriptFiles(scope: ScriptScope ): Promise<ScriptFile[]> {
 
-    const parentPath = location === "global" ? getGlobalFolder() : getWorkspaceFolder(true);
+    const parentPath = scope === ScriptScope.global ? getGlobalFolder() : getWorkspaceFolder(true);
     const scriptFolderPath = path.join(parentPath || '', '.scriptify');
     const configPath = path.join(scriptFolderPath, "scriptify.json");
     if (!fs.existsSync(scriptFolderPath) || !fs.existsSync(configPath)) {
@@ -91,7 +92,7 @@ export async function getScriptFiles(location: "local" | "global"): Promise<Scri
 
 
     // Get config
-    const clientConfig = await new ClientConfig(location === "global").load();
+    const clientConfig = await new ClientConfig(scope).load();
 
     return Object.entries(clientConfig.modules).filter(entry => {
         return entry[1].enabled;
@@ -104,12 +105,13 @@ export async function getScriptFiles(location: "local" | "global"): Promise<Scri
 
         return {
             id: moduleName,
-            location: location,
+            scope: scope,
             name: modulePkgJson.scriptify?.name || modulePkgJson.displayName || moduleName,
             description: modulePkgJson.scriptify?.description || modulePkgJson.description,
             uri: path.join(modulePath, modulePkgJson.main || "index.js"),
             modulePath: modulePath,
-            config: moduleConfig
+            config: moduleConfig,
+            packageJSON: modulePkgJson
 
         };
     });
@@ -125,10 +127,10 @@ export function getGlobalFolder(): string {
 }
 
 /** Return the global or local script folder  */
-export function getScriptFolder(global: boolean) {
+export function getScriptFolder(scope:ScriptScope) {
 
     return new Promise<string>((resolve, reject) => {
-        if (!global) {
+        if (scope !== ScriptScope.global) {
             try {
                 resolve(path.join(getWorkspaceFolder() || "", ".scriptify"));
             } catch (err) {
@@ -148,8 +150,8 @@ export function getScriptFolder(global: boolean) {
  * @param overwrite - Optional parameter indicating whether to overwrite an existing file.
  * @returns A promise that resolves to the script path.
  */
-export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: string, global: boolean, overwrite: boolean = false) {
-    const clientConfig = await new ClientConfig(global).load();
+export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: string, scope: ScriptScope, overwrite: boolean = false) {
+    const clientConfig = await new ClientConfig(scope).load();
     const scriptName = packageJSON.name;
     const defaultModuleFolder = "./my-modules";
 
@@ -157,7 +159,7 @@ export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: s
     clientConfig.addPackage(packageJSON.name, { enabled: true, path: `./my-modules/${packageJSON.name}` });
 
     return new Promise<{ scriptPath: string }>(async (resolve, reject) => {
-        const scriptFolder = path.join(await getScriptFolder(global), defaultModuleFolder, scriptName);
+        const scriptFolder = path.join(await getScriptFolder(scope), defaultModuleFolder, scriptName);
 
         if (!fs.existsSync(scriptFolder)) {
             fs.mkdirSync(scriptFolder, { recursive: true });
@@ -190,7 +192,7 @@ export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: s
         } else {
             vscode.window.showWarningMessage("File already exists. Do you want to overwrite it?", "Yes", "No").then(val => {
                 if (val === "Yes") {
-                    return writeScriptFile(packageJSON, scriptContent, global, true);
+                    return writeScriptFile(packageJSON, scriptContent, scope, true);
                 } else {
                     reject({ fileExist: true, rejected: true });
                 }

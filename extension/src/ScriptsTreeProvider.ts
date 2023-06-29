@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { ScriptTreeItem } from "./ScriptTreeItem";
 import { getScriptFiles } from "./utils";
+import { ScriptScope } from "./ScriptScope";
 
 /**
  * Tree view provider for scripts.
@@ -9,12 +10,12 @@ export class ScriptsTreeProvider implements vscode.TreeDataProvider<ScriptTreeIt
     /**
      * Global scripts tree item.
      */
-    globalItems: vscode.TreeItem = new vscode.TreeItem('Global', vscode.TreeItemCollapsibleState.Collapsed);
+    globalItems: vscode.TreeItem = new vscode.TreeItem('Global', vscode.TreeItemCollapsibleState.Expanded);
 
     /**
      * Local scripts tree item.
      */
-    localItems: vscode.TreeItem = new vscode.TreeItem('Local', vscode.TreeItemCollapsibleState.Collapsed);
+    localItems: vscode.TreeItem = new vscode.TreeItem('Local', vscode.TreeItemCollapsibleState.Expanded);
 
     /**
      * Event emitter for tree data changes.
@@ -47,17 +48,33 @@ export class ScriptsTreeProvider implements vscode.TreeDataProvider<ScriptTreeIt
      * @returns The array of script tree items.
      */
     async getChildren(element?: ScriptTreeItem | undefined): Promise<ScriptTreeItem[]> {
+        const globalScripts = await getScriptFiles(ScriptScope.global);
+        const localScripts = await getScriptFiles(ScriptScope.local);
+
+        if (!localScripts.length && !globalScripts.length) {
+            return [];
+        }
+        
         console.log("element", element);
         if (element?.label === "Global") {
-            return (await getScriptFiles("global")).map(scriptFile => {
+            return globalScripts.map(scriptFile => {
                 return new ScriptTreeItem(scriptFile.name, scriptFile);
             });
         } else if (element?.label === "Local") {
-            return (await getScriptFiles("local")).map(scriptFile => {
+            return localScripts.map(scriptFile => {
                 return new ScriptTreeItem(scriptFile.name, scriptFile);
             });
         } else {
-            return [this.globalItems, this.localItems];
+            const root = [];
+            if (globalScripts.length) {
+                root.push(this.globalItems);
+            }
+
+            if (localScripts.length) {
+                root.push(this.localItems);
+            }
+
+            return root;
         }
     }
 
