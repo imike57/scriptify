@@ -15,34 +15,34 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    
+    "viewsWelcome": [
+      {
+        "view": "scriptify.tree",
+        "contents": "No scripts found. \n[Create global script](command:scriptify.createGlobalScript)\n[Create local script](command:scriptify.createScript)\n[Download](command:scriptify.downloadScript)"
+      }
+    ],
     "views": {
-      "explorer": [
-        {
-          "id": "scriptify.tree",
-          "name": "Scriptify"
-        }
-      ]
+      "explorer": [{
+        "id": "scriptify.tree",
+        "name": "Scriptify"
+      }]
     },
     "menus": {
-      "view/title": [
-        {
-          "command": "scriptify.tree.refresh",
-          "when": "view == 'scriptify.tree'",
-          "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "scriptify.tree.apply",
-          "when": "viewItem == ScriptTreeItem",
-          "group": "inline"
-        }
-      ],
+      "view/title": [{
+        "command": "scriptify.tree.refresh",
+        "when": "view == 'scriptify.tree'",
+        "group": "navigation"
+      }],
+      "view/item/context": [{
+        "command": "scriptify.tree.apply",
+        "when": "viewItem == ScriptTreeItem",
+        "group": "inline"
+      }],
       "editor/context": []
     },
     "submenus": [],
-    "commands": [
-      {
+    "commands": [{
         "command": "scriptify.tree.apply",
         "title": "Apply"
       },

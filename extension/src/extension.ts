@@ -106,9 +106,17 @@ function downloadScript(keyword?: string) {
             };
 
             terminal.sendText(`${installCommands[getFavoritePackageManager()]} ${scriptChoice.label}`);
-
-            //addPackageToClientConfig(global, scriptChoice.label, { enabled: true });
+            terminal.sendText('exit');
             await clientConfig.addPackage(scriptChoice.label, { enabled: true }).save();
+
+            // Wait for terminal is closed, then update the tree view. 
+            vscode.window.onDidCloseTerminal((e) => {
+              if (e === terminal) {
+                scriptsTreeProvider.refresh();
+                e.dispose();
+              }
+            });
+
 
           });
 
@@ -173,7 +181,9 @@ function transform(value) {
 module.exports = transform;
 `;
 
-      writeScriptFile(packageJSONFile, scriptContent, createGlobally);
+      writeScriptFile(packageJSONFile, scriptContent, createGlobally).then(res => {
+        scriptsTreeProvider.refresh();
+      });
 
     }
   });
@@ -349,13 +359,14 @@ function onUpdate(context: vscode.ExtensionContext) {
 }
 
 
+export const scriptsTreeProvider = new ScriptsTreeProvider();
+
 
 /**
  * This method is called when the extension is activated.
  * The extension is activated the very first time the command is executed.
  */
 export function activate(context: vscode.ExtensionContext) {
-  const scriptsTreeProvider = new ScriptsTreeProvider();
   onUpdate(context);
 
 
