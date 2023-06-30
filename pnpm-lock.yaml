@@ -68,6 +68,8 @@ importers:
 
   packages/eval: {}
 
+  packages/increment: {}
+
   packages/lodash:
     dependencies:
       lodash:
