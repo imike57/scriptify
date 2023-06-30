@@ -55,7 +55,6 @@ export class ScriptsTreeProvider implements vscode.TreeDataProvider<ScriptTreeIt
             return [];
         }
         
-        console.log("element", element);
         if (element?.label === "Global") {
             return globalScripts.map(scriptFile => {
                 return new ScriptTreeItem(scriptFile.name, scriptFile);

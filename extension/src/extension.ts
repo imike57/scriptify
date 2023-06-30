@@ -140,16 +140,12 @@ async function createScriptFile() {
 
   const scope:{ label:string, value: ScriptScope } | undefined = await vscode.window.showQuickPick([{ label: "Globally", value: ScriptScope.global }, { label: "Locally", value: ScriptScope.local }]);
 
-  console.log("scope", scope);
-
   if (!scope) {
     return;
   }
 
   // Check or create config file
-  const clientConfig = await new ClientConfig(scope.value).load();
-
-  console.log(clientConfig);
+  await new ClientConfig(scope.value).load();
 
   vscode.window.showInputBox({
     prompt: "Enter script name",
@@ -381,11 +377,8 @@ async function removeScript(scriptFile:ScriptFile) {
     fs.rm(scriptFile.modulePath, { recursive: true, force: true },(err) => {
 
       if (!err){
-        console.log("clientConfig", clientConfig.modules);
         clientConfig.save().then(res => {
-          console.log("saved", res.modules);
           vscode.window.showInformationMessage(`${scriptFile.name} removed`);
-
           scriptsTreeProvider.refresh();
         });
       } else {
