@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.2.2
+
+### Patch Changes
+
+- 046b0e6: Allow Apply Script quick pick to be dismissed
+
 ## 2.2.1
 
 ### Patch Changes
