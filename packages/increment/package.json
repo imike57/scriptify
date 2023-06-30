@@ -1,0 +1,19 @@
+{
+    "name": "@scriptify-vscode/increment",
+    "displayName": "increment",
+    "version": "0.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "scriptify",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {},
+    "scriptify": {
+        "name": "Increment",
+        "description": "A function for incrementing numeric values and characters."
+    }
+}
