@@ -129,7 +129,8 @@
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
     "package_vsce": "vsce package --no-dependencies",
-    "prepublishOnly": "echo \"Error: Extension should not be published. Use filter to exclude.\" && exit 1"
+    "prepublishOnly": "echo \"Error: Extension should not be published. Use filter to exclude.\" && exit 1",
+    "schema:ClientConfig": "typescript-json-schema './tsconfig.json' 'ClientConfig' --out ./schema/scriptify.json --excludePrivate --required --defaultProps --noExtraProps --strictNullChecks --useTypeOfKeyword"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
@@ -144,7 +145,8 @@
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.1",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "typescript-json-schema": "^0.58.1"
   },
   "keywords": [
     "Scriptify",

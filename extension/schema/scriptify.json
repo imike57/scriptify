@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "defaultProperties": [],
+    "definitions": {
+        "ScriptScope": {
+            "enum": [
+                0,
+                1
+            ],
+            "type": "number"
+        }
+    },
+    "properties": {
+        "modules": {
+            "typeof": "function"
+        },
+        "scope": {
+            "$ref": "#/definitions/ScriptScope"
+        }
+    },
+    "required": [
+        "modules",
+        "scope"
+    ],
+    "type": "object"
+}
+
