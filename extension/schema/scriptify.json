@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "defaultProperties": [],
+    "definitions": {
+        "ClientConfigModule": {
+            "additionalProperties": {
+                "additionalProperties": {},
+                "defaultProperties": [],
+                "properties": {
+                    "enabled": {
+                        "description": "If `true`, the module is available in the scripts list.",
+                        "type": "boolean"
+                    },
+                    "env": {
+                        "description": "An object that will be included as an environment variable under `process.env`."
+                    },
+                    "path": {
+                        "description": "Allows defining a local path for the script. It should point to the package folder.",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "enabled"
+                ],
+                "type": "object"
+            },
+            "defaultProperties": [],
+            "description": "Object where the key is a package name and the value is its configuration.",
+            "type": "object"
+        }
+    },
+    "description": "Represents the client configuration.",
+    "properties": {
+        "$schema": {
+            "description": "Helps to validate your configuration.",
+            "type": "string"
+        },
+        "modules": {
+            "$ref": "#/definitions/ClientConfigModule",
+            "description": "Module list. Each represents a module with its properties."
+        }
+    },
+    "required": [
+        "$schema",
+        "modules"
+    ],
+    "type": "object"
+}
+
