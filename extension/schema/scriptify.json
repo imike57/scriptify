@@ -3,25 +3,47 @@
     "additionalProperties": false,
     "defaultProperties": [],
     "definitions": {
-        "ScriptScope": {
-            "enum": [
-                0,
-                1
-            ],
-            "type": "number"
+        "ClientConfigModule": {
+            "additionalProperties": {
+                "additionalProperties": {},
+                "defaultProperties": [],
+                "properties": {
+                    "enabled": {
+                        "description": "If `true`, the module is available in the scripts list.",
+                        "type": "boolean"
+                    },
+                    "env": {
+                        "description": "An object that will be included as an environment variable under `process.env`."
+                    },
+                    "path": {
+                        "description": "Allows defining a local path for the script. It should point to the package folder.",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "enabled"
+                ],
+                "type": "object"
+            },
+            "defaultProperties": [],
+            "description": "Object where the key is a package name and the value is its configuration.",
+            "type": "object"
         }
     },
+    "description": "Represents the client configuration.",
     "properties": {
-        "modules": {
-            "typeof": "function"
+        "$schema": {
+            "description": "Helps to validate your configuration.",
+            "type": "string"
         },
-        "scope": {
-            "$ref": "#/definitions/ScriptScope"
+        "modules": {
+            "$ref": "#/definitions/ClientConfigModule",
+            "description": "Module list. Each represents a module with its properties."
         }
     },
     "required": [
-        "modules",
-        "scope"
+        "$schema",
+        "modules"
     ],
     "type": "object"
 }

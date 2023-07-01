@@ -121,7 +121,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run -S esbuild-base -- --minify && cp ./node_modules/vm2/lib/*.js ./out/",
+    "vscode:prepublish": "pnpm run schema:ClientConfig && npm run -S esbuild-base -- --minify && cp ./node_modules/vm2/lib/*.js ./out/",
     "esbuild-base": "rimraf out && esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
@@ -130,7 +130,7 @@
     "test": "node ./out/test/runTest.js",
     "package_vsce": "vsce package --no-dependencies",
     "prepublishOnly": "echo \"Error: Extension should not be published. Use filter to exclude.\" && exit 1",
-    "schema:ClientConfig": "typescript-json-schema './tsconfig.json' 'ClientConfig' --out ./schema/scriptify.json --excludePrivate --required --defaultProps --noExtraProps --strictNullChecks --useTypeOfKeyword"
+    "schema:ClientConfig": "typescript-json-schema './tsconfig.json' 'ClientConfig' --out ./schema/scriptify.json --excludePrivate --required --defaultProps --noExtraProps --strictNullChecks"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
