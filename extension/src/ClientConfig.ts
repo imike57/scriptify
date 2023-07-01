@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 /**
  * Object where the key is a package name and the value is its configuration.
  */
-export interface ClientConfigModule {
+interface ClientConfigModule {
     /** Module name */
     [key: string]: {
         [key: string]: any;
