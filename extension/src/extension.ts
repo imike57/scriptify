@@ -428,8 +428,10 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
     vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
     vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder),
-    vscode.commands.registerCommand('scriptify.tree.apply', (choice: { script:ScriptFile}) => {
-      applyScript(choice.script);
+    vscode.commands.registerCommand('scriptify.tree.apply', async (choice: { script:ScriptFile}) => {
+      // Retrieve the associated script to ensure that the latest configuration is obtained. 
+      const relatedScript = (await getScriptFiles(choice.script.scope)).find(script => script.id === choice.script.id);
+      applyScript(relatedScript);
     }),
     vscode.commands.registerCommand('scriptify.tree.help', (choice: { script:ScriptFile}) => {
       openFormattedMarkdown(path.join(choice.script.modulePath, "readme.md"));
