@@ -219,10 +219,10 @@ async function executeVM(scriptString: string, scriptFile: ScriptFile) {
       mock: {
         vscode: vscode,
         scriptify: scriptify
-
       }
     },
-    env: scriptFile.config?.env
+    env: scriptFile.config?.env,
+    argv: [await getScriptFolder(scriptFile.scope)]
   });
 
   // Call the script
@@ -256,9 +256,24 @@ async function applyScript(scriptFile?: ScriptFile) {
           });
 
           Promise.all(transformedTexts).then(tTexts => {
+
+            const outputLocation = scriptFile.config?.out || "selection";
+
             editor.edit(editBuilder => {
-              selections.forEach((selection, index) => {
-                editBuilder.replace(selection, tTexts[index]);
+              selections.forEach(async (selection, index) => {
+
+                  if (outputLocation === "selection") {
+                    editBuilder.replace(selection, tTexts[index]);
+
+                  } else if (outputLocation === "file") {
+                    const document = await vscode.workspace.openTextDocument({ content: tTexts[index] });
+                    vscode.window.showTextDocument(document);
+
+                  } else if (outputLocation === "outputChannel") {
+                    scriptifyConsole.log(tTexts[index]);
+                  } else {
+                    // Nothing to do
+                  }
               });
             }).then(success => {
               if (success) {

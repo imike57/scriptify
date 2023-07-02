@@ -1,0 +1,23 @@
+{
+    "name": "@scriptify-vscode/handlebars",
+    "displayName": "handlebars",
+    "version": "0.0.0",
+    "description": "handlebars for scriptify",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "scriptify",
+    "license": "ISC",
+    "dependencies": {
+        "handlebars": "^4.7.7"
+    },
+    "scriptify": {
+        "name": "Handlebars",
+        "description": "Minimal templating on steroids"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.79.1"
+    }
+}

@@ -12,10 +12,23 @@ interface ClientConfigModule {
         [key: string]: any;
         /** If `true`, the module is available in the scripts list. */
         enabled: boolean;
-        /** Allows defining a local path for the script. It should point to the package folder. */
+        /** Allows defining a local path for the script. It should point to the package folder that contains the `package.json` file. 
+         * - This property is usually required for locally created scripts.
+         * - By default, the script is searched in `node_modules/<package_name>`, which is the default location for downloaded scripts.
+        */
         path?: string;
         /** An object that will be included as an environment variable under `process.env`. */
         env?: any;
+
+        /**
+         * Output location selection.
+         * - `selection`: The function result replaces the current selection.
+         * - `outputChannel`: The function result is displayed in the output channel.
+         * - `file`: The function result is displayed in a new file.
+         * - `none`: Do nothing with the result.
+         * @default selection
+         */
+        out?: "selection" | "outputChannel" | "file" | "none";
     };
 }
 

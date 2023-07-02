@@ -15,8 +15,19 @@
                     "env": {
                         "description": "An object that will be included as an environment variable under `process.env`."
                     },
+                    "out": {
+                        "default": "selection",
+                        "description": "Output location selection.\n- `selection`: The function result replaces the current selection.\n- `outputChannel`: The function result is displayed in the output channel.\n- `file`: The function result is displayed in a new file.\n- `none`: Do nothing with the result.",
+                        "enum": [
+                            "file",
+                            "none",
+                            "outputChannel",
+                            "selection"
+                        ],
+                        "type": "string"
+                    },
                     "path": {
-                        "description": "Allows defining a local path for the script. It should point to the package folder.",
+                        "description": "Allows defining a local path for the script. It should point to the package folder that contains the `package.json` file. \n- This property is usually required for locally created scripts.\n- By default, the script is searched in `node_modules/<package_name>`, which is the default location for downloaded scripts.",
                         "type": "string"
                     }
                 },

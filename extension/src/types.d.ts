@@ -1,3 +1,4 @@
+import { ClientConfig } from "./ClientConfig";
 import { ScriptScope } from "./ScriptScope";
 
 /**
@@ -18,7 +19,7 @@ export interface ScriptFile {
     /** Path to the module root. */
     modulePath:string,
     /** Local config defined in scriptify.json client file. */
-    config?:ClientConfig['modules'][string],
+    config?:ClientConfig['modules'][number],
     /** Package JSON */
     packageJSON:PackageJSON
 }
