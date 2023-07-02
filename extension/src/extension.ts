@@ -219,10 +219,10 @@ async function executeVM(scriptString: string, scriptFile: ScriptFile) {
       mock: {
         vscode: vscode,
         scriptify: scriptify
-
       }
     },
-    env: scriptFile.config?.env
+    env: scriptFile.config?.env,
+    argv: [await getScriptFolder(scriptFile.scope)]
   });
 
   // Call the script
@@ -256,9 +256,22 @@ async function applyScript(scriptFile?: ScriptFile) {
           });
 
           Promise.all(transformedTexts).then(tTexts => {
+
+            const outputLocation = scriptFile.config?.out || "currentSelection";
+
             editor.edit(editBuilder => {
-              selections.forEach((selection, index) => {
-                editBuilder.replace(selection, tTexts[index]);
+              selections.forEach(async (selection, index) => {
+
+                  if (outputLocation === "currentSelection") {
+                    editBuilder.replace(selection, tTexts[index]);
+
+                  } else if (outputLocation === "newFile") {
+                    const document = await vscode.workspace.openTextDocument({ content: tTexts[index] });
+                    vscode.window.showTextDocument(document);
+
+                  } else {
+                    scriptifyConsole.log(tTexts[index]);
+                  }
               });
             }).then(success => {
               if (success) {

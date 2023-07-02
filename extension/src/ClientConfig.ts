@@ -16,6 +16,15 @@ interface ClientConfigModule {
         path?: string;
         /** An object that will be included as an environment variable under `process.env`. */
         env?: any;
+
+        /**
+         * Output location selection.
+         * - `currentSelection`: The function result replaces the current selection.
+         * - `outputChannel`: The function result is displayed in the output channel.
+         * - `newFile`: The function result is displayed in a new file.
+         * @default currentSelection
+         */
+        out?: "currentSelection" | "outputChannel" | "newFile"
     };
 }
 

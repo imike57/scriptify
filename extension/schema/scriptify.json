@@ -15,6 +15,16 @@
                     "env": {
                         "description": "An object that will be included as an environment variable under `process.env`."
                     },
+                    "out": {
+                        "default": "currentSelection",
+                        "description": "Output location selection.\n- `currentSelection`: The function result replaces the current selection.\n- `outputChannel`: The function result is displayed in the output channel.\n- `newFile`: The function result is displayed in a new file.",
+                        "enum": [
+                            "currentSelection",
+                            "newFile",
+                            "outputChannel"
+                        ],
+                        "type": "string"
+                    },
                     "path": {
                         "description": "Allows defining a local path for the script. It should point to the package folder.",
                         "type": "string"
