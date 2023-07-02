@@ -22,13 +22,13 @@ interface ClientConfigModule {
 
         /**
          * Output location selection.
-         * - `currentSelection`: The function result replaces the current selection.
+         * - `selection`: The function result replaces the current selection.
          * - `outputChannel`: The function result is displayed in the output channel.
-         * - `newFile`: The function result is displayed in a new file.
+         * - `file`: The function result is displayed in a new file.
          * - `none`: Do nothing with the result.
-         * @default currentSelection
+         * @default selection
          */
-        out?: "currentSelection" | "outputChannel" | "newFile" | "none";
+        out?: "selection" | "outputChannel" | "file" | "none";
     };
 }
 

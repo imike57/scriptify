@@ -257,15 +257,15 @@ async function applyScript(scriptFile?: ScriptFile) {
 
           Promise.all(transformedTexts).then(tTexts => {
 
-            const outputLocation = scriptFile.config?.out || "currentSelection";
+            const outputLocation = scriptFile.config?.out || "selection";
 
             editor.edit(editBuilder => {
               selections.forEach(async (selection, index) => {
 
-                  if (outputLocation === "currentSelection") {
+                  if (outputLocation === "selection") {
                     editBuilder.replace(selection, tTexts[index]);
 
-                  } else if (outputLocation === "newFile") {
+                  } else if (outputLocation === "file") {
                     const document = await vscode.workspace.openTextDocument({ content: tTexts[index] });
                     vscode.window.showTextDocument(document);
 
