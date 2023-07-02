@@ -269,8 +269,10 @@ async function applyScript(scriptFile?: ScriptFile) {
                     const document = await vscode.workspace.openTextDocument({ content: tTexts[index] });
                     vscode.window.showTextDocument(document);
 
-                  } else {
+                  } else if (outputLocation === "outputChannel") {
                     scriptifyConsole.log(tTexts[index]);
+                  } else {
+                    // Nothing to do
                   }
               });
             }).then(success => {

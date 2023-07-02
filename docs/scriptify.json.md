@@ -4,24 +4,40 @@ This file is automatically created during the installation or creation of a new 
 
 Depending on the location of your scripts, the `scriptify.json` file will be present in your global installation folder and/or in the folder of your local workspace under the `.scriptify/scriptify.json` directory.
 
+Since version 2.3.0 of Scriptify, the configuration file includes a `$schema` property that points to the JSON schema validation. This schema validation provides guidance for defining your configuration accurately.
+
 ## Structure
 
 ```typescript
 interface ScriptifyJSON {
     /** Modules object */
     modules: {
-        /** `key` represents the package name */
+
+        /** Module name */
         [key: string]: {
-            /** Status */
-            enabled: boolean,
-            /** Path to the package folder that contains the `package.json` file
+            
+            /** If `true`, the module is available in the scripts list. */
+            enabled: boolean;
+
+            /** Allows defining a local path for the script. It should point to the package folder that contains the `package.json` file. 
              * - This property is usually required for locally created scripts.
              * - By default, the script is searched in `node_modules/<package_name>`, which is the default location for downloaded scripts.
+            */
+            path?: string;
+
+            /** An object that will be included as an environment variable under `process.env`. */
+            env?: any;
+
+            /**
+             * Output location selection.
+             * - `currentSelection`: The function result replaces the current selection.
+             * - `outputChannel`: The function result is displayed in the output channel.
+             * - `newFile`: The function result is displayed in a new file.
+             * - `none`: Do nothing with the result.
+             * @default currentSelection
              */
-            path?: string,
-            /** Environment variables accessible from the script via `process.env` */
-            env?: any
-        }
+            out?: "currentSelection" | "outputChannel" | "newFile" | "none";
+        };
     }
 }
 ```
