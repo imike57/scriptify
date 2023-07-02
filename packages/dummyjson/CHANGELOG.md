@@ -1,5 +1,11 @@
 # @scriptify-vscode/dummyjson
 
+## 1.0.2
+
+### Patch Changes
+
+- c727a53: Readme Update
+
 ## 1.0.1
 
 ### Patch Changes

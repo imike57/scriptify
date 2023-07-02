@@ -1,7 +1,7 @@
 {
     "name": "@scriptify-vscode/handlebars",
     "displayName": "handlebars",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "description": "handlebars for scriptify",
     "main": "index.js",
     "scripts": {

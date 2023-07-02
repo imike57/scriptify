@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.3.0
+
+### Minor Changes
+
+- c727a53: - Allow specifying the desired output of the script.
+
+### Patch Changes
+
+- c84f75d: - Added JSON schema validation for the configuration file.
+
 ## 2.2.2
 
 ### Patch Changes

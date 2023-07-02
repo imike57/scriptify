@@ -1,7 +1,7 @@
 {
     "name": "@scriptify-vscode/openai",
     "displayName": "openai",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "OpenAI Node.js Library for Scriptify.",
     "main": "dist/index.js",
     "scripts": {

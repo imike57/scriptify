@@ -1,0 +1,7 @@
+# @scriptify-vscode/handlebars
+
+## 0.0.1
+
+### Patch Changes
+
+- c727a53: Readme Update
