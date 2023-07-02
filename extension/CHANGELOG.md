@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.4.0
+
+### Minor Changes
+
+- 4c429d8: Tree view:
+
+  - Add a "Help" action.
+  - Add a "Download" action.
+  - Add icons for each action.
+
+### Patch Changes
+
+- bfc19f5: - Apply a script from tree: Retrieve the associated script to ensure that the latest configuration is obtained.
+
 ## 2.3.0
 
 ### Minor Changes
