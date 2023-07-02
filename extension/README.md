@@ -34,8 +34,7 @@ Scriptify provides the following configuration options:
 
 Scriptify provides the following commands:
 
-- **[Scriptify]: Create New Script**: Create a new script.
-- **[Scriptify]: Create New Global Script**: Create a new global script.
+- **[Scriptify]: Create New Script**: Create a new script locally or globally.
 - **[Scriptify]: Apply Script**: Apply a script to the current selection.
 - **[Scriptify]: Download Community Package**: Download a community script package.
 - **[Scriptify]: Open the configuration panel**: Open the Scriptify configuration panel.
@@ -112,11 +111,24 @@ If you are upgrading from Scriptify 1.x to 2.x, please refer to the [migration g
 
 ## Contributing
 
-Contributions to Scriptify are welcome! If you encounter any issues or have suggestions for improvements, please open an issue in the [GitHub repository](https://github.com/imike57/scriptify/issues).
+Contributions to Scriptify are welcome! 
 
+Please follow the [contribution guide](https://github.com/imike57/scriptify/blob/main/docs/contribute.md) to understand how you can contribute to the project.
+
+If you encounter any issues or have suggestions for improvements, please open an issue in the [GitHub repository](https://github.com/imike57/scriptify/issues). Your feedback is valuable and helps us make Scriptify even better.
+
+We appreciate your interest in contributing to the project!
 
 ### Sharing a Script
-Have you created a script that you would like to share? Feel free to make a pull request and add your scripts to the `packages` folder of the repository. You can publish your package under the `@scriptify-vscode` scope to share it with others.
+
+Have you created a script that you would like to share with others? We welcome your contributions! To share your script, you can follow these steps:
+
+1. Add your script to the `packages` folder in the repository.
+2. Publish your package under the `@scriptify-vscode` scope on NPM to make it available to others.
+
+Once your script is published, it will be listed among the [community packages](https://www.npmjs.com/search?q=%40scriptify-vscode) from the extension where other users can discover and download it.
+
+Thank you for sharing your script and contributing to the Scriptify community!
 
 ## Special Thanks
 
