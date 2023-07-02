@@ -32,6 +32,11 @@
     "menus": {
       "view/title": [
         {
+          "command": "scriptify.tree.download",
+          "when": "view == 'scriptify.tree'",
+          "group": "navigation"
+        },
+        {
           "command": "scriptify.tree.refresh",
           "when": "view == 'scriptify.tree'",
           "group": "navigation"
@@ -43,6 +48,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "scriptify.tree.help",
+          "when": "viewItem == ScriptTreeItem",
+          "group": "inline"
+        },
         {
           "command": "scriptify.tree.apply",
           "when": "viewItem == ScriptTreeItem",
@@ -59,24 +69,40 @@
     "submenus": [],
     "commands": [
       {
+        "command": "scriptify.tree.help",
+        "title": "Help",
+        "enablement": "view == scriptify.tree",
+        "icon": "$(book)"
+      },
+      {
+        "command": "scriptify.tree.download",
+        "title": "Download from community",
+        "enablement": "view == scriptify.tree",
+        "icon": "$(cloud-download)"
+      },
+      {
         "command": "scriptify.tree.apply",
         "title": "Apply",
-        "enablement": "view == scriptify.tree"
+        "enablement": "view == scriptify.tree",
+        "icon": "$(run)"
       },
       {
         "command": "scriptify.tree.remove",
         "title": "Remove",
-        "enablement": "view == scriptify.tree"
+        "enablement": "view == scriptify.tree",
+        "icon": "$(trash)"
       },
       {
         "command": "scriptify.tree.refresh",
         "title": "Refresh",
-        "enablement": "view == scriptify.tree"
+        "enablement": "view == scriptify.tree",
+        "icon": "$(sync)"
       },
       {
         "command": "scriptify.tree.create",
         "title": "Create",
-        "enablement": "view == scriptify.tree"
+        "enablement": "view == scriptify.tree",
+        "icon": "$(new-file)"
       },
       {
         "command": "scriptify.createScript",

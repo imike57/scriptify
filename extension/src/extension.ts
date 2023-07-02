@@ -431,12 +431,16 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.tree.apply', (choice: { script:ScriptFile}) => {
       applyScript(choice.script);
     }),
+    vscode.commands.registerCommand('scriptify.tree.help', (choice: { script:ScriptFile}) => {
+      openFormattedMarkdown(path.join(choice.script.modulePath, "readme.md"));
+    }),
     vscode.commands.registerCommand('scriptify.tree.remove', (choice: { script:ScriptFile}) => {
       removeScript(choice.script);
     }),
     vscode.window.registerTreeDataProvider('scriptify.tree', scriptsTreeProvider),
     vscode.commands.registerCommand('scriptify.tree.refresh', () => scriptsTreeProvider.refresh()),
-    vscode.commands.registerCommand('scriptify.tree.create', createScriptFile)
+    vscode.commands.registerCommand('scriptify.tree.create', createScriptFile),
+    vscode.commands.registerCommand('scriptify.tree.download', downloadScript)
   );
 
   return {
