@@ -96,8 +96,33 @@ function downloadScript(keyword?: string) {
 
             const clientConfig = await new ClientConfig(locationChoice.value).load();
 
-            const terminal = vscode.window.createTerminal("scriptify");
+            const terminal = vscode.window.terminals.find(terminal => terminal.name === "scriptify") || vscode.window.createTerminal("scriptify");
 
+            // Wait for terminal is closed, then update the tree view. 
+            const onClose = vscode.window.onDidCloseTerminal(async (e) => {
+
+              if (e === terminal && e.exitStatus && e.exitStatus.reason === vscode.TerminalExitReason.Process && e.exitStatus.code === 0) {
+
+                // Get package JSON of the package to check if a default configuration exist. 
+                const packagePath = path.join(await getScriptFolder(locationChoice.value),'node_modules', scriptChoice.label);
+                const packageJSON:PackageJSON = JSON.parse(fs.readFileSync(path.join(packagePath, 'package.json'), 'utf-8'));
+                if (packageJSON) {
+                  await clientConfig.addPackage(scriptChoice.label, { enabled: true, env: packageJSON.scriptify?.defaultEnv }).save();
+                  scriptsTreeProvider.refresh();
+                  vscode.window.showInformationMessage('Installation success');
+                  openFormattedMarkdown(path.join(packagePath, "readme.md"));
+                }
+
+
+              } else {
+                vscode.window.showInformationMessage('Installation cancelled');
+              }
+
+              e.dispose();
+
+              onClose.dispose();
+
+            });
             terminal.show();
 
             terminal.sendText(`cd ${await getScriptFolder(locationChoice.value)}`);
@@ -110,15 +135,9 @@ function downloadScript(keyword?: string) {
 
             terminal.sendText(`${installCommands[getFavoritePackageManager()]} ${scriptChoice.label}`);
             terminal.sendText('exit');
-            await clientConfig.addPackage(scriptChoice.label, { enabled: true }).save();
 
-            // Wait for terminal is closed, then update the tree view. 
-            vscode.window.onDidCloseTerminal((e) => {
-              if (e === terminal) {
-                scriptsTreeProvider.refresh();
-                e.dispose();
-              }
-            });
+
+
 
 
           });
@@ -138,7 +157,7 @@ function downloadScript(keyword?: string) {
  */
 async function createScriptFile() {
 
-  const scope:{ label:string, value: ScriptScope } | undefined = await vscode.window.showQuickPick([{ label: "Globally", value: ScriptScope.global }, { label: "Locally", value: ScriptScope.local }]);
+  const scope: { label: string, value: ScriptScope } | undefined = await vscode.window.showQuickPick([{ label: "Globally", value: ScriptScope.global }, { label: "Locally", value: ScriptScope.local }]);
 
   if (!scope) {
     return;
@@ -200,10 +219,6 @@ module.exports = transform;
 
 async function executeVM(scriptString: string, scriptFile: ScriptFile) {
 
-  const rootPath = await getScriptFolder(scriptFile.scope);
-
-  console.log("scriptFile", scriptFile);
-
   const vm = new NodeVM({
     console: "inherit",
     sandbox: {
@@ -262,18 +277,18 @@ async function applyScript(scriptFile?: ScriptFile) {
             editor.edit(editBuilder => {
               selections.forEach(async (selection, index) => {
 
-                  if (outputLocation === "selection") {
-                    editBuilder.replace(selection, tTexts[index]);
+                if (outputLocation === "selection") {
+                  editBuilder.replace(selection, tTexts[index]);
 
-                  } else if (outputLocation === "file") {
-                    const document = await vscode.workspace.openTextDocument({ content: tTexts[index] });
-                    vscode.window.showTextDocument(document);
+                } else if (outputLocation === "file") {
+                  const document = await vscode.workspace.openTextDocument({ content: tTexts[index] });
+                  vscode.window.showTextDocument(document);
 
-                  } else if (outputLocation === "outputChannel") {
-                    scriptifyConsole.log(tTexts[index]);
-                  } else {
-                    // Nothing to do
-                  }
+                } else if (outputLocation === "outputChannel") {
+                  scriptifyConsole.log(tTexts[index]);
+                } else {
+                  // Nothing to do
+                }
               });
             }).then(success => {
               if (success) {
@@ -309,12 +324,12 @@ async function applyScript(scriptFile?: ScriptFile) {
     } catch (err) {
       return vscode.window.showErrorMessage(`${err}`);
     }
-  
+
     if (files.length === 0) {
       vscode.window.showErrorMessage('No scripts found.');
       return;
     }
-  
+
     vscode.window.showQuickPick(files.map(scriptFile => {
       return {
         label: scriptFile.name,
@@ -332,7 +347,7 @@ async function applyScript(scriptFile?: ScriptFile) {
     });
   }
 
-  
+
 }
 
 
@@ -349,7 +364,7 @@ function openGlobalFolder() {
 }
 
 /** Open a markdown file formatted */
-function openFormattedMarkdown(filePath:string) {
+function openFormattedMarkdown(filePath: string) {
   // Construction of URI for the Markdown file
   const markdownUri = vscode.Uri.file(filePath);
   vscode.commands.executeCommand('markdown.showPreview', markdownUri);
@@ -364,21 +379,21 @@ function onUpdate(context: vscode.ExtensionContext) {
 
   const storedVersion = context.globalState.get<string>(updatePopupKey);
 
-  
-  if ((storedVersion && semver.lt(storedVersion, "2.0.0") && semver.gt(extensionVersion, "2.0.0")) || context.extensionMode === vscode.ExtensionMode.Development) {
-    vscode.window.showInformationMessage(`Scriptify has been updated to version ${extensionVersion}. Please refer to the migration guide to update and ensure compatibility with your scripts.`, 
-    "Show", "Cancel").then(choice => {
-      if (choice === "Show") {
-        vscode.env.openExternal(vscode.Uri.parse(`https://github.com/imike57/scriptify/blob/${extensionVersion}/docs/migration.md`));
-      }
 
-      context.globalState.update(updatePopupKey, extensionVersion);
-    });
+  if ((storedVersion && semver.lt(storedVersion, "2.0.0") && semver.gt(extensionVersion, "2.0.0")) || context.extensionMode === vscode.ExtensionMode.Development) {
+    vscode.window.showInformationMessage(`Scriptify has been updated to version ${extensionVersion}. Please refer to the migration guide to update and ensure compatibility with your scripts.`,
+      "Show", "Cancel").then(choice => {
+        if (choice === "Show") {
+          vscode.env.openExternal(vscode.Uri.parse(`https://github.com/imike57/scriptify/blob/${extensionVersion}/docs/migration.md`));
+        }
+
+        context.globalState.update(updatePopupKey, extensionVersion);
+      });
   }
 
 }
 
-async function removeScript(scriptFile:ScriptFile) {
+async function removeScript(scriptFile: ScriptFile) {
 
   const confirm = await vscode.window.showWarningMessage(`Are you sure to remove ${scriptFile.name} ?`, "Yes", "No");
 
@@ -389,9 +404,9 @@ async function removeScript(scriptFile:ScriptFile) {
   const clientConfig = await new ClientConfig(scriptFile.scope).load();
 
   clientConfig.removePackage(scriptFile.packageJSON.name).then(res => {
-    fs.rm(scriptFile.modulePath, { recursive: true, force: true },(err) => {
+    fs.rm(scriptFile.modulePath, { recursive: true, force: true }, (err) => {
 
-      if (!err){
+      if (!err) {
         clientConfig.save().then(res => {
           vscode.window.showInformationMessage(`${scriptFile.name} removed`);
           scriptsTreeProvider.refresh();
@@ -407,7 +422,7 @@ async function removeScript(scriptFile:ScriptFile) {
     scriptifyConsole.log(err);
   });
 
-  
+
 }
 
 
@@ -428,15 +443,15 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('scriptify.downloadScript', downloadScript),
     vscode.commands.registerCommand('scriptify.openConfiguration', openConfiguration),
     vscode.commands.registerCommand('scriptify.openGlobalFolder', openGlobalFolder),
-    vscode.commands.registerCommand('scriptify.tree.apply', async (choice: { script:ScriptFile}) => {
+    vscode.commands.registerCommand('scriptify.tree.apply', async (choice: { script: ScriptFile }) => {
       // Retrieve the associated script to ensure that the latest configuration is obtained. 
       const relatedScript = (await getScriptFiles(choice.script.scope)).find(script => script.id === choice.script.id);
       applyScript(relatedScript);
     }),
-    vscode.commands.registerCommand('scriptify.tree.help', (choice: { script:ScriptFile}) => {
+    vscode.commands.registerCommand('scriptify.tree.help', (choice: { script: ScriptFile }) => {
       openFormattedMarkdown(path.join(choice.script.modulePath, "readme.md"));
     }),
-    vscode.commands.registerCommand('scriptify.tree.remove', (choice: { script:ScriptFile}) => {
+    vscode.commands.registerCommand('scriptify.tree.remove', (choice: { script: ScriptFile }) => {
       removeScript(choice.script);
     }),
     vscode.window.registerTreeDataProvider('scriptify.tree', scriptsTreeProvider),
@@ -446,7 +461,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   return {
-    storage : {
+    storage: {
       global: new ClientStorage(context, "globalState"),
       workspace: new ClientStorage(context, "workspaceState")
     }
