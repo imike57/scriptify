@@ -15,6 +15,7 @@ import { ClientConfig } from './ClientConfig';
 import { ClientStorage } from './ClientStorage';
 import { ScriptsTreeProvider } from './ScriptsTreeProvider';
 import * as semver from "semver";
+import { spawn } from 'child_process';
 
 /** Provide some features in script */
 export const scriptify = new Scriptify();
@@ -95,50 +96,90 @@ function downloadScript(keyword?: string) {
 
 
             const clientConfig = await new ClientConfig(locationChoice.value).load();
+            const installArg = {
+              npm: "i",
+              pnpm: "add",
+              yarn: "add"
+            };
 
-            const terminal = vscode.window.terminals.find(terminal => terminal.name === "scriptify") || vscode.window.createTerminal("scriptify");
+            const favoritePackageManager = getFavoritePackageManager();
 
-            // Wait for terminal is closed, then update the tree view. 
-            const onClose = vscode.window.onDidCloseTerminal(async (e) => {
 
-              if (e === terminal && e.exitStatus && e.exitStatus.reason === vscode.TerminalExitReason.Process && e.exitStatus.code === 0) {
+            vscode.window.withProgress({ cancellable: true, location: vscode.ProgressLocation.Notification, title: "Installation in progress" }, async (progress, token) => {
 
+              const installProcess = spawn(favoritePackageManager, [installArg[favoritePackageManager], scriptChoice.label], { cwd: await getScriptFolder(locationChoice.value) });
+
+              progress.report({ message: `Installing ${scriptChoice.label}`, increment: 0 });
+
+
+              token.onCancellationRequested(() => {
+                console.log("KILLED");
+                installProcess.kill();
+              });
+
+
+
+
+              return new Promise<"completed" | "cancelled">((resolve, reject) => {
+                let errLog = "";
+                let dataLog = "";
+
+
+                installProcess.stderr.on('data', (err) => {
+                  errLog += err.toString();
+                });
+
+
+                installProcess.stdout.on('data', (chunk) => {
+                  dataLog += chunk.toString();
+                });
+
+                installProcess.on('exit', (code, signal) => {
+                  if (signal === 'SIGINT') {
+                    reject(new Error("Cancelled"));
+
+                  } else if (code === 0) {
+                    // The process is successfully completed.
+                    resolve("completed");
+
+                  } else if (signal === "SIGTERM") {
+                    // Process has been killed.
+                    resolve("cancelled");
+
+                  } else {
+                    reject(new Error(`The process ended with an error code: ${code}` + "\r" + errLog));
+
+                  }
+                });
+
+
+                installProcess.on('error', (err) => {
+                  reject(err);
+                });
+
+              });
+
+
+            }).then(async (value) => {
+              if (value === "completed") {
                 // Get package JSON of the package to check if a default configuration exist. 
-                const packagePath = path.join(await getScriptFolder(locationChoice.value),'node_modules', scriptChoice.label);
-                const packageJSON:PackageJSON = JSON.parse(fs.readFileSync(path.join(packagePath, 'package.json'), 'utf-8'));
+                const packagePath = path.join(await getScriptFolder(locationChoice.value), 'node_modules', scriptChoice.label);
+                const packageJSON: PackageJSON = JSON.parse(fs.readFileSync(path.join(packagePath, 'package.json'), 'utf-8'));
                 if (packageJSON) {
                   await clientConfig.addPackage(scriptChoice.label, { enabled: true, env: packageJSON.scriptify?.defaultEnv }).save();
                   scriptsTreeProvider.refresh();
                   vscode.window.showInformationMessage('Installation success');
                   openFormattedMarkdown(path.join(packagePath, "readme.md"));
-                }
-
-
+                }                
               } else {
                 vscode.window.showInformationMessage('Installation cancelled');
               }
 
-              e.dispose();
-
-              onClose.dispose();
+            }, (err) => {
+              console.error(err);
+              scriptifyConsole.error(err);
 
             });
-            terminal.show();
-
-            terminal.sendText(`cd ${await getScriptFolder(locationChoice.value)}`);
-
-            const installCommands = {
-              npm: "npm i",
-              pnpm: "pnpm add",
-              yarn: "yarn add"
-            };
-
-            terminal.sendText(`${installCommands[getFavoritePackageManager()]} ${scriptChoice.label}`);
-            terminal.sendText('exit');
-
-
-
-
 
           });
 
@@ -149,7 +190,6 @@ function downloadScript(keyword?: string) {
     });
   });
 }
-
 
 /**
  * Creates a script file in the current workspace or globally.
