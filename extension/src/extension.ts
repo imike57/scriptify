@@ -22,14 +22,14 @@ export const scriptify = new Scriptify();
 
 
 /**
- * Downloads a script from a GitHub repository and allows the user to choose to install it globally or locally.
+ * Downloads a script from a NPM repository and allows the user to choose to install it globally or locally.
+ * @param keyword - Optional keyword to filter the search results.
  */
 function downloadScript(keyword?: string) {
-  // TODO, filter package for current version only.
+  // TODO: Filter package for current version only.
   const compatibleVersion = getVersion();
 
   const npmScopedAPI = `https://registry.npmjs.org/-/v1/search?text=scope:scriptify-vscode${keyword ? `+${keyword}` : ''}&size=250`;
-
 
   axios<NpmResponse>({
     method: "get",
@@ -39,7 +39,8 @@ function downloadScript(keyword?: string) {
 
     const base = [
       {
-        label: "Search"
+        label: "$(search-view-icon) Search",
+        value: "search",
       },
       {
         label: "",
@@ -50,30 +51,29 @@ function downloadScript(keyword?: string) {
     const list = results.data.objects.map(entry => {
       return {
         label: entry.package.name,
+        value: entry.package.name,
         description: entry.package.description,
         data: entry
       };
     });
 
-
+    // Show a quick pick menu to select a script
     vscode.window.showQuickPick([...base, ...list], {
       title: `Select a script (${compatibleVersion})`
     }).then(async scriptChoice => {
 
       if (scriptChoice) {
 
-        if (scriptChoice.label === "Search") {
-
+        if (scriptChoice.value === "search") {
+          // Allow the user to search for a package
           vscode.window.showInputBox({
             title: "Search a package"
           }).then(keyword => {
-
             return downloadScript(keyword);
           });
 
-
         } else {
-
+          // Show a quick pick menu to select the installation location
           const scopes: { label: string, value: ScriptScope }[] = [
             {
               label: "Globally",
@@ -86,49 +86,40 @@ function downloadScript(keyword?: string) {
           ];
 
           vscode.window.showQuickPick(scopes, {
-            title: "Where to install ?"
+            title: "Where to install?"
           }).then(async locationChoice => {
 
             if (!locationChoice) {
               return;
             }
 
-
-
+            // Load the client configuration
             const clientConfig = await new ClientConfig(locationChoice.value).load();
             const installArg = {
-              npm: "i",
-              pnpm: "add",
-              yarn: "add"
+              npm: ["install"],
+              pnpm: ["add"],
+              yarn: ["add"]
             };
-
             const favoritePackageManager = getFavoritePackageManager();
-
 
             vscode.window.withProgress({ cancellable: true, location: vscode.ProgressLocation.Notification, title: "Installation in progress" }, async (progress, token) => {
 
-              const installProcess = spawn(favoritePackageManager, [installArg[favoritePackageManager], scriptChoice.label], { cwd: await getScriptFolder(locationChoice.value) });
+              // Spawn a new process to install the script
+              const installProcess = spawn(favoritePackageManager, [...installArg[favoritePackageManager], scriptChoice.label], { cwd: await getScriptFolder(locationChoice.value) });
 
               progress.report({ message: `Installing ${scriptChoice.label}`, increment: 0 });
 
-
               token.onCancellationRequested(() => {
-                console.log("KILLED");
                 installProcess.kill();
               });
-
-
-
 
               return new Promise<"completed" | "cancelled">((resolve, reject) => {
                 let errLog = "";
                 let dataLog = "";
 
-
                 installProcess.stderr.on('data', (err) => {
                   errLog += err.toString();
                 });
-
 
                 installProcess.stdout.on('data', (chunk) => {
                   dataLog += chunk.toString();
@@ -136,60 +127,51 @@ function downloadScript(keyword?: string) {
 
                 installProcess.on('exit', (code, signal) => {
                   if (signal === 'SIGINT') {
+                    // Process has been cancelled (CTRL + C).                    
                     reject(new Error("Cancelled"));
-
                   } else if (code === 0) {
                     // The process is successfully completed.
                     resolve("completed");
-
                   } else if (signal === "SIGTERM") {
                     // Process has been killed.
                     resolve("cancelled");
-
                   } else {
                     reject(new Error(`The process ended with an error code: ${code}` + "\r" + errLog));
-
                   }
                 });
-
 
                 installProcess.on('error', (err) => {
                   reject(err);
                 });
-
               });
-
 
             }).then(async (value) => {
               if (value === "completed") {
-                // Get package JSON of the package to check if a default configuration exist. 
+                // Get package JSON of the installed package
                 const packagePath = path.join(await getScriptFolder(locationChoice.value), 'node_modules', scriptChoice.label);
                 const packageJSON: PackageJSON = JSON.parse(fs.readFileSync(path.join(packagePath, 'package.json'), 'utf-8'));
+
                 if (packageJSON) {
+                  // Add the package to the client configuration
                   await clientConfig.addPackage(scriptChoice.label, { enabled: true, env: packageJSON.scriptify?.defaultEnv }).save();
                   scriptsTreeProvider.refresh();
                   vscode.window.showInformationMessage('Installation success');
                   openFormattedMarkdown(path.join(packagePath, "readme.md"));
-                }                
+                }
               } else {
                 vscode.window.showInformationMessage('Installation cancelled');
               }
-
             }, (err) => {
               console.error(err);
               scriptifyConsole.error(err);
-
             });
-
           });
-
-
-
         }
       }
     });
   });
 }
+
 
 /**
  * Creates a script file in the current workspace or globally.
