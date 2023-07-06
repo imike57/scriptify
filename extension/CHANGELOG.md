@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.5.0
+
+### Minor Changes
+
+- dd7da10: 
+  
+  - Improved the installation process by displaying a progress notification and allowing cancellation. (Replaced the vscode terminal with `spawn` from `child_process`.)
+  - Added the ability to open the README.md file of a package after its installation.
+  - Allow package contributors to specify default environment variables.
+
 ## 2.4.0
 
 ### Minor Changes
