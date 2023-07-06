@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ScriptTreeItem } from "./ScriptTreeItem";
-import { getScriptFiles } from "./utils";
+import { getScriptFiles } from "../utils";
 import { ScriptScope } from "./ScriptScope";
 
 /**
@@ -54,7 +54,7 @@ export class ScriptsTreeProvider implements vscode.TreeDataProvider<ScriptTreeIt
         if (!localScripts.length && !globalScripts.length) {
             return [];
         }
-        
+
         if (element?.label === "Global") {
             return globalScripts.map(scriptFile => {
                 return new ScriptTreeItem(scriptFile.name, scriptFile);

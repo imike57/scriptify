@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ScriptFile } from "./types";
+import { ScriptFile } from "../defs/ScriptFile";
 
 /**
  * Represents a script tree item in the tree view.
