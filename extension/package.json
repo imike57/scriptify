@@ -147,7 +147,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run schema:ClientConfig && npm run -S esbuild-base -- --minify && cp ./node_modules/vm2/lib/*.js ./out/",
+    "vscode:prepublish": "rm -rf ./out && pnpm run schema:ClientConfig && npm run -S esbuild-base -- --minify && cp ./node_modules/vm2/lib/*.js ./out/",
     "esbuild-base": "rimraf out && esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
