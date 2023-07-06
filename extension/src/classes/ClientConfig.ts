@@ -1,6 +1,6 @@
 import * as path from "path";
 import * as fs from "fs";
-import { checkFileExists, getScriptFolder } from "./utils";
+import { checkFileExists, getScriptFolder } from "../utils";
 import { ScriptScope } from "./ScriptScope";
 import * as vscode from "vscode";
 /**

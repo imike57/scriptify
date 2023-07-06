@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ScriptTreeItem } from "./ScriptTreeItem";
-import { getScriptFiles } from "./utils";
+import { getScriptFiles } from "../utils";
 import { ScriptScope } from "./ScriptScope";
 
 /**

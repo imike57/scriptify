@@ -2,9 +2,10 @@ import * as path from "path";
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as os from 'os';
-import { PackageJSON, ScriptFile } from "./types";
-import { ScriptScope } from "./ScriptScope";
-import { ClientConfig } from "./ClientConfig";
+import { PackageJSON } from "./defs/PackageJSON";
+import { ScriptFile } from "./defs/ScriptFile";
+import { ScriptScope } from "./classes/ScriptScope";
+import { ClientConfig } from "./classes/ClientConfig";
 
 
 /** Return the current version of the extension. */
@@ -205,3 +206,12 @@ export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: s
 export function getFavoritePackageManager() {
     return vscode.workspace.getConfiguration('scriptify').get<"npm" | "pnpm" | "yarn">('favoritePackageManager') || "npm";
 }
+
+
+/** Open a markdown file formatted */
+export function openFormattedMarkdown(filePath: string) {
+    // Construction of URI for the Markdown file
+    const markdownUri = vscode.Uri.file(filePath);
+    vscode.commands.executeCommand('markdown.showPreview', markdownUri);
+  }
+  
