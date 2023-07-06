@@ -41,6 +41,7 @@ export interface PackageJSON {
     scriptify?: {
         name?: string;
         description?: string;
+        defaultEnv?: any
     };
 }
 

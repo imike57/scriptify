@@ -130,6 +130,8 @@ Once your script is published, it will be listed among the [community packages](
 
 Thank you for sharing your script and contributing to the Scriptify community!
 
+[Read more](https://github.com/imike57/scriptify/blob/main/docs/create-a-package.md)
+
 ## Special Thanks
 
 Special thanks to the following contributors who have helped improve and enhance the Scriptify extension:
