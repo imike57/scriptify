@@ -2,11 +2,11 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { getScriptFiles, getScriptFolder, openFormattedMarkdown } from './utils';
+import { openFormattedMarkdown } from './utils/openFormattedMarkdown';
+import { getScriptFiles } from "./utils/getScriptFiles";
 import { ScriptFile } from "./defs/ScriptFile";
 import { Scriptify } from './classes/Scriptify';
-import { NodeVM, VMScript, VM } from "vm2";
-import { scriptifyConsole } from './classes/console';
+import { VM } from "vm2";
 import { ClientStorage } from './classes/ClientStorage';
 import { ScriptsTreeProvider } from './classes/ScriptsTreeProvider';
 import * as semver from "semver";
@@ -20,37 +20,6 @@ import { removeScript } from './commands/removeScript';
 /** Provide some features in script */
 export const scriptify = new Scriptify();
 
-
-export async function executeVM(scriptString: string, scriptFile: ScriptFile) {
-
-  const vm = new NodeVM({
-    console: "inherit",
-    sandbox: {
-      scriptify: scriptify,
-      console: scriptifyConsole
-    },
-    require: {
-      builtin: ['*'],
-      external: {
-        transitive: true,
-        modules: ['*']
-      },
-      mock: {
-        vscode: vscode,
-        scriptify: scriptify
-      }
-    },
-    env: scriptFile.config?.env,
-    argv: [await getScriptFolder(scriptFile.scope)]
-  });
-
-  // Call the script
-  const transform = new VMScript(scriptString, scriptFile.uri);
-
-
-  return vm.run(transform, scriptFile.uri);
-
-}
 
 /** Function called on activated to produce or alert about an update of Scriptify */
 function onUpdate(context: vscode.ExtensionContext) {

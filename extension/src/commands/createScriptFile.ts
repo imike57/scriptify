@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { writeScriptFile } from '../utils';
+import { writeScriptFile } from "../utils/writeScriptFile";
 import { PackageJSON } from "../defs/PackageJSON";
 import { ScriptScope } from "../classes/ScriptScope";
 import { ClientConfig } from '../classes/ClientConfig';

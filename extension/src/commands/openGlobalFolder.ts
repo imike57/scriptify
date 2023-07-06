@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { getGlobalFolder } from '../utils';
+import { getGlobalFolder } from "../utils/getGlobalFolder";
 
 /** Open the global folder */
 export function openGlobalFolder() {
