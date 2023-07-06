@@ -6,7 +6,12 @@ import { scriptifyConsole } from '../classes/console';
 import { scriptify } from '../extension';
 
 
-
+/**
+ * Executes a script in a NodeVM sandbox environment.
+ * @param scriptString - The script code to execute.
+ * @param scriptFile - The script file information.
+ * @returns A promise that resolves with the result of the script execution.
+ */
 export async function executeVM(scriptString: string, scriptFile: ScriptFile) {
 
   const vm = new NodeVM({

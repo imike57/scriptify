@@ -6,8 +6,6 @@ import * as vscode from 'vscode';
  * @returns The workspace folder path, or null if no workspace folders are open and ignoreErrors is set to true.
  * @throws An error if no folder is open and ignoreErrors is set to false.
  */
-
-
 export function getWorkspaceFolder(ignoreErrors = false): string | null {
     const { workspaceFolders } = vscode.workspace;
     if (!workspaceFolders || workspaceFolders.length === 0) {

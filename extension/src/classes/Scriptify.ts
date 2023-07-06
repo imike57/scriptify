@@ -1,5 +1,4 @@
-import { getWorkspaceFolder } from "../utils/getWorkspaceFolder";
-import { getVersion } from "../utils/getVersion";
+import { getWorkspaceFolder, getVersion } from "../utils";
 
 export class Scriptify {
 

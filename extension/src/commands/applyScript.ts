@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { getScriptFiles } from "../utils/getScriptFiles";
 import { ScriptFile } from "../defs/ScriptFile";
 import { ScriptScope } from "../classes/ScriptScope";
 import { scriptifyConsole } from '../classes/console';
-import { executeVM } from '../utils/executeVM';
+import { executeVM, getScriptFiles } from '../utils';
 
 /**
  * Applies a script to the selected text in the active editor.

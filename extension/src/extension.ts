@@ -2,8 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { openFormattedMarkdown } from './utils/openFormattedMarkdown';
-import { getScriptFiles } from "./utils/getScriptFiles";
+import { openFormattedMarkdown, getScriptFiles } from './utils';
 import { ScriptFile } from "./defs/ScriptFile";
 import { Scriptify } from './classes/Scriptify';
 import { VM } from "vm2";

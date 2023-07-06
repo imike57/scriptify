@@ -11,12 +11,10 @@ import { getScriptFolder } from "./getScriptFolder";
  * Writes a script file with the specified name and content.
  * @param scriptName - The name of the script.
  * @param scriptContent - The content of the script.
- * @param global - Indicates if the script is global or local.
+ * @param scope - Indicates if the scope.
  * @param overwrite - Optional parameter indicating whether to overwrite an existing file.
  * @returns A promise that resolves to the script path.
  */
-
-
 export async function writeScriptFile(packageJSON: PackageJSON, scriptContent: string, scope: ScriptScope, overwrite: boolean = false) {
     const clientConfig = await new ClientConfig(scope).load();
     const scriptName = packageJSON.name;

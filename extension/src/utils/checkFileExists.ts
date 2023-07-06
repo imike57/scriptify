@@ -5,8 +5,6 @@ import * as fs from 'fs';
  * @param filePath - The path of the file to check.
  * @returns `true` if the file exists, `false` otherwise.
  */
-
-
 export function checkFileExists(filePath: string) {
     try {
         fs.accessSync(filePath, fs.constants.F_OK);

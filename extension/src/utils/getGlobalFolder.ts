@@ -6,8 +6,6 @@ import * as os from 'os';
  * If not configured, it returns the operating system's temporary directory.
  * @returns The global folder location.
  */
-
-
 export function getGlobalFolder(): string {
     return vscode.workspace.getConfiguration('scriptify').get<string>('globalFolderLocation') || os.tmpdir();
 }

@@ -2,10 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from "axios";
-import { openFormattedMarkdown } from '../utils/openFormattedMarkdown';
-import { getFavoritePackageManager } from '../utils/getFavoritePackageManager';
-import { getScriptFolder } from "../utils/getScriptFolder";
-import { getVersion } from "../utils/getVersion";
+
 import { PackageJSON } from "../defs/PackageJSON";
 import { ScriptScope } from "../classes/ScriptScope";
 import { NpmResponse } from '../defs/NpmResponse';
@@ -13,6 +10,7 @@ import { scriptifyConsole } from '../classes/console';
 import { ClientConfig } from '../classes/ClientConfig';
 import { spawn } from 'child_process';
 import { scriptsTreeProvider } from '../extension';
+import { getFavoritePackageManager, getScriptFolder, getVersion, openFormattedMarkdown } from '../utils';
 
 /**
  * Downloads a script from a NPM repository and allows the user to choose to install it globally or locally.

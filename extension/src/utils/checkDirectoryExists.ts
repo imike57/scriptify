@@ -5,8 +5,6 @@ import * as fs from 'fs';
  * @param directoryPath The path of the directory to check.
  * @returns true if the directory exists, false otherwise.
  */
-
-
 export function checkDirectoryExists(directoryPath: string): boolean {
     try {
         const stat = fs.statSync(directoryPath);

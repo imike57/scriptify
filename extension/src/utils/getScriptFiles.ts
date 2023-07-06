@@ -8,12 +8,10 @@ import { getWorkspaceFolder } from "./getWorkspaceFolder";
 import { getGlobalFolder } from "./getGlobalFolder";
 
 /**
- * Retrieves the script files located in the specified parent path.
- * @param parentPath The parent path where the script files are located.
+ * Retrieves the script files located in the specified scope.
+ * @param scope The scope where the script files are located.
  * @returns An array of script files.
  */
-
-
 export async function getScriptFiles(scope: ScriptScope): Promise<ScriptFile[]> {
 
     const parentPath = scope === ScriptScope.global ? getGlobalFolder() : getWorkspaceFolder(true);
