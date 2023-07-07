@@ -1,5 +1,17 @@
 # Scriptify
 
+Have you ever found yourself having to perform repetitive tasks in VSCode?
+
+When you want to automate the transformation of a selection into a different format, there are plenty of extensions available that can help you achieve that. However, sometimes your case may be too specific for an existing extension to precisely fulfill your transformation needs, whether it's formatting JSON, prefixing values, transforming the shape, generating content, and so on.
+
+As you're likely a developer, you can quickly write a transformation function in JavaScript to accomplish what you desire. In this scenario, you have two options:
+
+1. Create your own VSCode extension: If you haven't already done so, you would need to learn how to create an extension, familiarize yourself with the VSCode API, build the extension, and then install it in your IDE. This process can be time-consuming and tedious for a simple script that you may only use for a single task.
+
+2. Use Scriptify: In the second case, Scriptify allows you to use your own JavaScript functions directly within VSCode. Additionally, you can import npm dependencies to make your life easier, similar to importing a package in your JS application. Typically, it would take just a minute to create a function that transforms your selection into what you desire.
+
+----
+
 Scriptify is a Visual Studio Code extension that allows you to create and apply JavaScript scripts to the current selection. With Scriptify, you can easily manipulate selected values using custom scripts.
 
 <p align="center">
