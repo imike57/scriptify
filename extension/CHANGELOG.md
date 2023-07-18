@@ -1,11 +1,17 @@
 # Change Log
 
+## 2.5.1
+
+### Patch Changes
+
+- 6c5453d: Fix: Extension fails to activate when no folder/multiple folders open in workspace
+
 ## 2.5.0
 
 ### Minor Changes
 
-- dd7da10: 
-  
+- dd7da10:
+
   - Improved the installation process by displaying a progress notification and allowing cancellation. (Replaced the vscode terminal with `spawn` from `child_process`.)
   - Added the ability to open the README.md file of a package after its installation.
   - Allow package contributors to specify default environment variables.
