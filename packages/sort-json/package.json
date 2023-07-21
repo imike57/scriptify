@@ -1,0 +1,19 @@
+{
+    "name": "@scriptify-vscode/sort-json",
+    "displayName": "sortJSON",
+    "version": "0.0.0",
+    "description": "SortJSON for Scriptify. Recursively sorts a JSON object, considering data types and preserving the order of properties for objects.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "scriptify",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {},
+    "scriptify": {
+        "name": "Sort JSON",
+        "description": "Recursively sorts a JSON object, considering data types and preserving the order of properties for objects."
+    }
+}
